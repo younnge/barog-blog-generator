@@ -1,0 +1,146 @@
+[
+  {
+    "id": "gangnam",
+    "name": "강남점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "seomyeon",
+    "name": "서면점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "deokcheon",
+    "name": "덕천점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "haeundae",
+    "name": "해운대점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "dongseongno",
+    "name": "동성로점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "balsan",
+    "name": "발산점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "gangneung",
+    "name": "강릉점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "hadan",
+    "name": "하단점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "pohang",
+    "name": "포항점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "gumi",
+    "name": "구미점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "ulsan",
+    "name": "울산점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "yangsan",
+    "name": "양산점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "gyeongju",
+    "name": "경주점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "geoje",
+    "name": "거제점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "gunsan",
+    "name": "군산점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "iksan",
+    "name": "익산점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "jinhae",
+    "name": "진해점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "yuseong",
+    "name": "유성점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "icheon",
+    "name": "이천점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "asan",
+    "name": "아산점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "bucheon",
+    "name": "부천점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "jinju",
+    "name": "진주점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "ulsan-donggu",
+    "name": "울산동구점",
+    "active": true,
+    "note": ""
+  },
+  {
+    "id": "pyeongtaek",
+    "name": "평택점",
+    "active": true,
+    "note": ""
+  }
+]

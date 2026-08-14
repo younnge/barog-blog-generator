@@ -1,0 +1,38 @@
+[
+  {
+    "id": "first-20s",
+    "name": "20대 첫 시술 입문",
+    "description": "시술 경험이 없어 용어부터 낯선 독자",
+    "active": true
+  },
+  {
+    "id": "care-30s",
+    "name": "30대 관리·재방문",
+    "description": "주기적으로 관리받는 경험자, 비교와 조합에 관심",
+    "active": true
+  },
+  {
+    "id": "sensitive",
+    "name": "민감·트러블 피부 고민",
+    "description": "자극과 부작용을 먼저 걱정하는 독자",
+    "active": true
+  },
+  {
+    "id": "bridal",
+    "name": "브라이덜·이벤트 대비",
+    "description": "일정이 정해져 있어 기간과 회차가 중요한 독자",
+    "active": true
+  },
+  {
+    "id": "male",
+    "name": "남성 고객",
+    "description": "정보 위주, 소요시간과 회복기간을 우선 고려",
+    "active": true
+  },
+  {
+    "id": "anti-aging-40s",
+    "name": "40대+ 안티에이징",
+    "description": "탄력·주름 등 노화 관리에 관심이 큰 독자",
+    "active": true
+  }
+]

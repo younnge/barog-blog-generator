@@ -1,0 +1,1741 @@
+[
+  {
+    "id": "petit",
+    "name": "쁘띠·주사",
+    "description": "보톡스·필러·주사 시술",
+    "active": true,
+    "items": [
+      {
+        "id": "petit-001",
+        "name": "보톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-002",
+        "name": "미간보톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-003",
+        "name": "턱보톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-004",
+        "name": "필러",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-005",
+        "name": "윤곽주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-006",
+        "name": "하이코",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-007",
+        "name": "리쥬란힐러",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-008",
+        "name": "쥬베룩",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-009",
+        "name": "엘란쎄",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-010",
+        "name": "레디어스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-011",
+        "name": "스킨부스터",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-012",
+        "name": "물광주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-013",
+        "name": "PDRN주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-014",
+        "name": "콜라겐주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-015",
+        "name": "비타민주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-016",
+        "name": "입술필러",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-017",
+        "name": "이마필러",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-018",
+        "name": "코필러",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-019",
+        "name": "필로르가주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-020",
+        "name": "리프팅주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-021",
+        "name": "지방분해주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-022",
+        "name": "턱필러",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-023",
+        "name": "토닝주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-024",
+        "name": "A보툴리눔 톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-025",
+        "name": "B보툴리눔 톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-026",
+        "name": "C보툴리눔 톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-027",
+        "name": "D보툴리눔 톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-028",
+        "name": "E보툴리눔 톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-029",
+        "name": "국산 보툴리눔 톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-030",
+        "name": "나보타",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-031",
+        "name": "뉴럭스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-032",
+        "name": "디스포트",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-033",
+        "name": "리즈톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-034",
+        "name": "메디톡신",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-035",
+        "name": "보툴렉스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-036",
+        "name": "앨러간",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-037",
+        "name": "원더톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-038",
+        "name": "제오민",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-039",
+        "name": "코어톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-040",
+        "name": "히아톡스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-041",
+        "name": "쥬비덤",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-042",
+        "name": "뉴라미스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-043",
+        "name": "채움 프리미엄",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-044",
+        "name": "바이리즌",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-045",
+        "name": "벨로테로",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-046",
+        "name": "레스틸렌",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-047",
+        "name": "콜라레쥬",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "petit-048",
+        "name": "히알라제",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "lifting",
+    "name": "리프팅·탄력",
+    "description": "처짐 개선·탄력 장비 시술",
+    "active": true,
+    "items": [
+      {
+        "id": "lifting-001",
+        "name": "슈링크 유니버스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-002",
+        "name": "슈링크",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-003",
+        "name": "울쎄라",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-004",
+        "name": "울쎄라피프라임",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-005",
+        "name": "써마지 FLX",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-006",
+        "name": "인모드",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-007",
+        "name": "올리지오",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-008",
+        "name": "포텐자",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-009",
+        "name": "덴서티",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-010",
+        "name": "리프테라",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-011",
+        "name": "리니어펌",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-012",
+        "name": "LDM 물방울 리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-013",
+        "name": "듀엣 RF",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-014",
+        "name": "더블로골드",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-015",
+        "name": "에어젯",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-016",
+        "name": "버츄RF",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-017",
+        "name": "실리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-018",
+        "name": "볼뉴머",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-019",
+        "name": "브이로 리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-020",
+        "name": "세르프",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-021",
+        "name": "써니리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-022",
+        "name": "온다리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-023",
+        "name": "텐써마",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-024",
+        "name": "RF 마이크로니들링",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-025",
+        "name": "실리프팅(녹는실)",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "lifting-026",
+        "name": "실리프팅(코그실)",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "vascular",
+    "name": "홍조·혈관",
+    "description": "홍조·혈관 확장 개선",
+    "active": true,
+    "items": [
+      {
+        "id": "vascular-001",
+        "name": "엑셀브이",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-002",
+        "name": "혈관레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-003",
+        "name": "제네시스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-004",
+        "name": "브이빔 퍼펙타",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-005",
+        "name": "지네시스V",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-006",
+        "name": "다이렉트V",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-007",
+        "name": "브이러쉬",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-008",
+        "name": "주사치료",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-009",
+        "name": "이지엠 V",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-010",
+        "name": "프로엘로우",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "vascular-011",
+        "name": "캔디라",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "pigment",
+    "name": "기미·잡티·색소",
+    "description": "색소·기미·잡티 개선",
+    "active": true,
+    "items": [
+      {
+        "id": "pigment-001",
+        "name": "피코토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-002",
+        "name": "피코라이트",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-003",
+        "name": "프락셀",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-004",
+        "name": "IPL",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-005",
+        "name": "글루타치온주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-006",
+        "name": "백옥주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-007",
+        "name": "토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-008",
+        "name": "듀얼토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-009",
+        "name": "GD토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-010",
+        "name": "HELIOS III 토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-011",
+        "name": "VRM 토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-012",
+        "name": "듀얼점타레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-013",
+        "name": "레블라이트 SI",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-014",
+        "name": "레블라이트토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-015",
+        "name": "색소레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-016",
+        "name": "일반토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-017",
+        "name": "제네시스 토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-018",
+        "name": "착색토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-019",
+        "name": "피코듀얼토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-020",
+        "name": "문신제거",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-021",
+        "name": "피코 문신제거",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-022",
+        "name": "점제거",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-023",
+        "name": "클라리티",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-024",
+        "name": "피코슈어",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-025",
+        "name": "멜라C",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-026",
+        "name": "큐엑스맥스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-027",
+        "name": "옥시젠",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-028",
+        "name": "루트록",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-029",
+        "name": "레이저토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-030",
+        "name": "스펙트라",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-031",
+        "name": "비타민C이온토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "pigment-032",
+        "name": "라이트필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "scar",
+    "name": "흉터·모공·결",
+    "description": "흉터·모공·피부결 개선",
+    "active": true,
+    "items": [
+      {
+        "id": "scar-001",
+        "name": "포텐자",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-002",
+        "name": "프락셀",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-003",
+        "name": "더마샤인",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-004",
+        "name": "MTS",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-005",
+        "name": "스킨부스터",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-006",
+        "name": "CO2 레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-007",
+        "name": "시크릿 레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-008",
+        "name": "실펌",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-009",
+        "name": "아이콘 1540 XD",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-010",
+        "name": "리투오",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-011",
+        "name": "코모공",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-012",
+        "name": "여드름 흉터·모공 관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-013",
+        "name": "에코투",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-014",
+        "name": "베이비콜라겐",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-015",
+        "name": "여드름 흉터 시술",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-016",
+        "name": "비비레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-017",
+        "name": "마이크로니들 RF",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "scar-018",
+        "name": "이지엠 X",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "acne",
+    "name": "여드름·트러블",
+    "description": "여드름·피지·트러블 관리",
+    "active": true,
+    "items": [
+      {
+        "id": "acne-001",
+        "name": "아쿠아필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-002",
+        "name": "LDM",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-003",
+        "name": "PDT",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-004",
+        "name": "여드름 관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-005",
+        "name": "아그네스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-006",
+        "name": "피지토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-007",
+        "name": "아크네",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-008",
+        "name": "플라듀오",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-009",
+        "name": "카프리 피지토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-010",
+        "name": "여드름 압출",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-011",
+        "name": "스마트룩스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-012",
+        "name": "엘로스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-013",
+        "name": "여드름 레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "acne-014",
+        "name": "헤어컬러피부",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "hairremoval",
+    "name": "제모",
+    "description": "부위별·장비별 레이저 제모",
+    "active": true,
+    "items": [
+      {
+        "id": "hairremoval-001",
+        "name": "겨드랑이 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-002",
+        "name": "수염 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-003",
+        "name": "남성 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-004",
+        "name": "여성 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-005",
+        "name": "아포지 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-006",
+        "name": "아포지 플러스 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-007",
+        "name": "젠틀맥스 프로 플러스 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-008",
+        "name": "아이글램 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-009",
+        "name": "DSE 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-010",
+        "name": "다이오드 레이저 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-011",
+        "name": "알렉산드라이트 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-012",
+        "name": "엔디야그 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-013",
+        "name": "IPL 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-014",
+        "name": "얼굴 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-015",
+        "name": "팔다리 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-016",
+        "name": "비키니 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-017",
+        "name": "전신 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "hairremoval-018",
+        "name": "콧털 제모",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "skincare",
+    "name": "스킨케어·관리",
+    "description": "필링·관리 프로그램",
+    "active": true,
+    "items": [
+      {
+        "id": "skincare-001",
+        "name": "아쿠아필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-002",
+        "name": "FCR필링(알라딘필)",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-003",
+        "name": "피부관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-004",
+        "name": "스킨케어·필링",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-005",
+        "name": "뷰레인",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-006",
+        "name": "오니코 무좀레이저",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-007",
+        "name": "옥시젠필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-008",
+        "name": "갈바닉",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-009",
+        "name": "다이아몬드필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-010",
+        "name": "산성필링",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-011",
+        "name": "메디필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-012",
+        "name": "살리실릭필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-013",
+        "name": "글리콜릭필",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-014",
+        "name": "마사지 관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-015",
+        "name": "콜라겐 부스팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-016",
+        "name": "수분관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-017",
+        "name": "스킨 부스팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-018",
+        "name": "각질관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-019",
+        "name": "딥클렌징 케어",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "skincare-020",
+        "name": "온열관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "antiaging",
+    "name": "안티에이징·재생",
+    "description": "재생·안티에이징 주사 및 부스터",
+    "active": true,
+    "items": [
+      {
+        "id": "antiaging-001",
+        "name": "PDRN주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-002",
+        "name": "콜라겐주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-003",
+        "name": "성장인자주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-004",
+        "name": "글루타치온주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-005",
+        "name": "백옥주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-006",
+        "name": "뉴라덤",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-007",
+        "name": "레티젠",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-008",
+        "name": "리쥬란HB",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-009",
+        "name": "리쥬란HB플러스",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-010",
+        "name": "리즈네",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-011",
+        "name": "릴리이드",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-012",
+        "name": "스컬트라",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-013",
+        "name": "셀러디엠",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-014",
+        "name": "엑소좀",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-015",
+        "name": "위코우노",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-016",
+        "name": "유리본",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-017",
+        "name": "자가조직 콜라겐 재생 고분자 PLA 주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-018",
+        "name": "자하거추출물주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-019",
+        "name": "필로드 힐링주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-020",
+        "name": "필로르가 135",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-021",
+        "name": "필메드 135",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-022",
+        "name": "항노화주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-023",
+        "name": "안티에이징 부스터",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-024",
+        "name": "에버클",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-025",
+        "name": "콜라쥬",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-026",
+        "name": "바이리즌",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-027",
+        "name": "DNA주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-028",
+        "name": "엑소좀주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-029",
+        "name": "줄기세포 부스터",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-030",
+        "name": "코엔자임Q10주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "antiaging-031",
+        "name": "마늘주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  },
+  {
+    "id": "body",
+    "name": "바디·체형",
+    "description": "체형·바디 라인 관리",
+    "active": true,
+    "items": [
+      {
+        "id": "body-001",
+        "name": "바디윤곽주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-002",
+        "name": "바디 슈링크",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-003",
+        "name": "체형관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-004",
+        "name": "바디 토닝",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-005",
+        "name": "BTL 쏙빼주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-006",
+        "name": "바디 슬림주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-007",
+        "name": "바디 리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-008",
+        "name": "바디 슬리밍",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-009",
+        "name": "클라투",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-010",
+        "name": "파워슬림주사",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-011",
+        "name": "카복시",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-012",
+        "name": "쿨쎄라",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-013",
+        "name": "펀치웨이브",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-014",
+        "name": "쿨테크",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-015",
+        "name": "셀룰라이트 관리",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-016",
+        "name": "허벅지 리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-017",
+        "name": "복부 리프팅",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-018",
+        "name": "팔뚝 윤곽",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      },
+      {
+        "id": "body-019",
+        "name": "바디 RF",
+        "aliases": [],
+        "signature": false,
+        "active": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "warm",
+    "name": "다정한",
+    "description": "곁에서 챙겨주듯 부드럽게",
+    "active": true
+  },
+  {
+    "id": "professional",
+    "name": "전문적인",
+    "description": "근거를 갖춰 차분하게",
+    "active": true
+  },
+  {
+    "id": "plain",
+    "name": "담백한",
+    "description": "군더더기 없이 간결하게",
+    "active": true
+  },
+  {
+    "id": "lively",
+    "name": "발랄한",
+    "description": "밝고 가볍게, 짧은 호흡으로",
+    "active": true
+  }
+]
