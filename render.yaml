@@ -10,7 +10,10 @@ services:
     branch: main
     buildCommand: pip install -r server/requirements.txt
     startCommand: uvicorn server.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /api/health
+    # healthCheckPath 는 두지 않는다.
+    # 무료 인스턴스에서 헬스체크가 간헐적으로 실패하면 Render가 라우팅을 잠시 끊어
+    # 사용자에게 빈 404가 나간다(x-render-routing: no-server). 앱의 /api/health 는
+    # 화면에서 서버를 미리 깨우는 용도로 계속 쓴다.
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4
