@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>바로그 블로그 글 만들기</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<!-- 화면 밖 안내(스크린리더용) -->
+<p id="announcer" class="sr-only" role="status" aria-live="polite"></p>
+
+<!-- ───────────────────────── [0] 잠금 화면 ───────────────────────── -->
+<section id="screen-lock" class="screen screen-lock">
+  <div class="lock-card">
+    <div class="lock-logo">바로그</div>
+    <h1 class="lock-title">블로그 글 만들기</h1>
+    <p class="lock-sub">사내 전용 도구입니다</p>
+    <form id="lock-form" class="lock-form" autocomplete="off">
+      <label class="sr-only" for="lock-password">비밀번호</label>
+      <input id="lock-password" type="password" class="input" placeholder="비밀번호" autocomplete="current-password">
+      <p id="lock-error" class="field-error" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block">들어가기</button>
+    </form>
+  </div>
+</section>
+
+<!-- ───────────────────────── 공통 헤더 ───────────────────────── -->
+<header id="app-header" class="app-header" hidden>
+  <div class="wrap header-inner">
+    <a class="brand" href="#" data-go="input">
+      <span class="brand-mark">바로그</span>
+      <span class="brand-name">블로그 글 만들기</span>
+    </a>
+    <nav class="tabs" role="tablist" aria-label="화면 이동">
+      <button class="tab is-active" role="tab" data-tab="input" aria-selected="true">새 글 만들기</button>
+      <button class="tab" role="tab" data-tab="history" aria-selected="false">이력</button>
+    </nav>
+  </div>
+</header>
+
+<main id="app-main" hidden>
+
+<!-- ───────────────────────── [1] 새 글 만들기 ───────────────────────── -->
+<section id="screen-input" class="screen" hidden>
+  <div class="wrap">
+
+    <ol class="steps" aria-label="진행 단계">
+      <li class="step is-current"><span class="step-num">1</span>입력</li>
+      <li class="step"><span class="step-num">2</span>키워드</li>
+      <li class="step"><span class="step-num">3</span>제목</li>
+      <li class="step"><span class="step-num">4</span>본문</li>
+    </ol>
+
+    <div class="page-head">
+      <h1 class="page-title">새 글 만들기</h1>
+      <button id="btn-load-last" class="btn btn-ghost btn-sm" hidden>직전 설정 불러오기</button>
+    </div>
+
+    <!-- 선택 요약 (스크롤해도 위에 붙어 있음) -->
+    <div id="summary-bar" class="summary-bar" hidden>
+      <span class="summary-label">선택한 항목</span>
+      <div id="summary-chips" class="summary-chips"></div>
+    </div>
+
+    <!-- 30일 내 중복 안내 -->
+    <div id="dup-banner" class="banner banner-warn" hidden></div>
+
+    <!-- 지점 -->
+    <section class="field">
+      <h2 class="field-title">지점 <span class="req">필수</span></h2>
+      <div id="group-branch" class="chips" role="group" aria-label="지점 선택"></div>
+    </section>
+
+    <!-- 시술 (카테고리 → 시술 2단계) -->
+    <section class="field">
+      <h2 class="field-title">시술 <span class="req">필수</span></h2>
+
+      <div class="search-box">
+        <svg class="icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="proc-search" type="search" class="input input-search" placeholder="시술 이름으로 찾기 (예: 울쎄라)" autocomplete="off">
+        <button id="proc-search-clear" class="search-clear" type="button" aria-label="검색어 지우기" hidden>×</button>
+      </div>
+
+      <div id="proc-categories" class="chips chips-category" role="group" aria-label="시술 카테고리"></div>
+      <div id="proc-items" class="chips chips-scroll" role="group" aria-label="시술 선택"></div>
+      <p id="proc-empty" class="empty-line" hidden>찾는 시술이 없어요. 다른 이름으로 검색해 보세요.</p>
+    </section>
+
+    <!-- 페르소나 -->
+    <section class="field">
+      <h2 class="field-title">글쓴이 시점 <span class="req">필수</span></h2>
+      <div id="group-persona" class="chips" role="group" aria-label="글쓴이 시점 선택"></div>
+      <div id="persona-warning" class="banner banner-warn banner-sm" hidden></div>
+      <div id="persona-custom" class="stack-sm" hidden>
+        <label class="sub-label" for="persona-custom-text">어떤 시점으로 쓸지 3줄로 알려주세요</label>
+        <textarea id="persona-custom-text" class="input textarea" rows="3" maxlength="300"
+          placeholder="예) 20년 경력 피부과 간호사 시점으로, 시술실에서 실제로 보는 장면 위주로"></textarea>
+      </div>
+    </section>
+
+    <!-- 독자 타겟 -->
+    <section class="field">
+      <h2 class="field-title">누가 읽나요 <span class="req">필수</span></h2>
+      <div id="group-audience" class="chips" role="group" aria-label="독자 타겟 선택"></div>
+    </section>
+
+    <!-- 톤 -->
+    <section class="field">
+      <h2 class="field-title">톤 <span class="req">필수</span></h2>
+      <div id="group-tone" class="chips" role="group" aria-label="톤 선택"></div>
+    </section>
+
+    <!-- 플랫폼 -->
+    <section class="field">
+      <h2 class="field-title">어디에 올리나요 <span class="req">필수</span></h2>
+      <div id="group-platform" class="chips" role="group" aria-label="플랫폼 선택"></div>
+    </section>
+
+    <!-- 분량 -->
+    <section class="field">
+      <h2 class="field-title">분량 <span class="req">필수</span></h2>
+      <div id="group-length" class="chips" role="group" aria-label="분량 선택"></div>
+    </section>
+
+    <!-- 고급 옵션 (접힘 기본) -->
+    <details class="advanced">
+      <summary class="advanced-summary">
+        <span>이벤트·가격 정보나 참고자료 넣기</span>
+        <span class="advanced-hint">선택</span>
+      </summary>
+      <div class="advanced-body">
+        <div class="stack-sm">
+          <label class="sub-label" for="input-cta">이벤트·가격·예약 안내</label>
+          <textarea id="input-cta" class="input textarea" rows="3" maxlength="500"
+            placeholder="예) 8월 한 달 첫 방문 상담 무료 / 예약은 프로필 링크로"></textarea>
+          <p class="help">글 마지막에 자연스럽게 넣어드려요. 비워두면 일반 예약 안내로 들어갑니다.</p>
+        </div>
+        <div class="stack-sm">
+          <label class="sub-label" for="input-reference">참고자료 붙여넣기</label>
+          <textarea id="input-reference" class="input textarea" rows="6" maxlength="8000"
+            placeholder="반응이 좋았던 기존 글이나 시술 설명자료를 붙여넣으면 톤과 내용을 참고합니다."></textarea>
+          <p class="help"><span id="ref-count">0</span> / 8,000자</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="actions">
+      <button id="btn-to-keywords" class="btn btn-primary btn-lg" disabled>키워드 추천받기</button>
+      <p id="input-hint" class="actions-hint">필수 항목을 모두 골라주세요</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ───────────────────────── [2] 키워드 선택 ───────────────────────── -->
+<section id="screen-keywords" class="screen" hidden>
+  <div class="wrap">
+    <ol class="steps" aria-label="진행 단계">
+      <li class="step is-done"><span class="step-num">1</span>입력</li>
+      <li class="step is-current"><span class="step-num">2</span>키워드</li>
+      <li class="step"><span class="step-num">3</span>제목</li>
+      <li class="step"><span class="step-num">4</span>본문</li>
+    </ol>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">키워드 고르기</h1>
+        <p class="page-sub">글에 넣을 검색 키워드를 <strong>3~5개</strong> 골라주세요.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-go="input">← 입력으로</button>
+    </div>
+
+    <div id="keyword-cards" class="cards"></div>
+
+    <div class="add-row">
+      <label class="sr-only" for="keyword-add">키워드 직접 추가</label>
+      <input id="keyword-add" class="input" placeholder="직접 추가할 키워드" maxlength="40" autocomplete="off">
+      <button id="keyword-add-btn" class="btn btn-secondary">추가</button>
+    </div>
+
+    <div class="actions">
+      <button id="btn-to-titles" class="btn btn-primary btn-lg" disabled>제목 추천받기</button>
+      <p id="keyword-hint" class="actions-hint">0개 선택됨 · 3개 이상 골라주세요</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────── [3] 제목 선택 ───────────────────────── -->
+<section id="screen-titles" class="screen" hidden>
+  <div class="wrap">
+    <ol class="steps" aria-label="진행 단계">
+      <li class="step is-done"><span class="step-num">1</span>입력</li>
+      <li class="step is-done"><span class="step-num">2</span>키워드</li>
+      <li class="step is-current"><span class="step-num">3</span>제목</li>
+      <li class="step"><span class="step-num">4</span>본문</li>
+    </ol>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">제목 고르기</h1>
+        <p class="page-sub">마음에 드는 제목을 하나 고르세요. 고른 뒤 직접 고칠 수 있어요.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-go="keywords">← 키워드로</button>
+    </div>
+
+    <div id="title-cards" class="cards"></div>
+
+    <div class="stack-sm" id="title-edit-wrap" hidden>
+      <label class="sub-label" for="title-edit">고른 제목 (직접 고칠 수 있어요)</label>
+      <input id="title-edit" class="input input-lg" maxlength="120">
+      <p class="help"><span id="title-count">0</span>자</p>
+    </div>
+
+    <div class="actions">
+      <button id="btn-retry-titles" class="btn btn-secondary">다시 추천받기</button>
+      <button id="btn-to-result" class="btn btn-primary btn-lg" disabled>본문 생성하기</button>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────── [4] 결과 ───────────────────────── -->
+<section id="screen-result" class="screen" hidden>
+  <div class="wrap wrap-wide">
+    <ol class="steps" aria-label="진행 단계">
+      <li class="step is-done"><span class="step-num">1</span>입력</li>
+      <li class="step is-done"><span class="step-num">2</span>키워드</li>
+      <li class="step is-done"><span class="step-num">3</span>제목</li>
+      <li class="step is-current"><span class="step-num">4</span>본문</li>
+    </ol>
+
+    <div class="result-layout">
+      <article class="result-main">
+        <h1 id="result-title" class="result-title"></h1>
+        <p class="result-meta"><span id="result-meta-text"></span></p>
+        <div id="result-sections"></div>
+        <div id="result-hashtags" class="hashtags" hidden></div>
+      </article>
+
+      <aside class="result-side">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">의료법 검사</h2>
+            <span id="compliance-badge" class="badge"></span>
+          </div>
+          <div id="compliance-list" class="issue-list"></div>
+          <p class="panel-foot">이 검사는 도우미일 뿐이며 법률 자문이 아닙니다. 게시 전 최종 확인은 담당자 책임입니다.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="wrap wrap-wide bottom-inner">
+      <div class="bottom-left">
+        <label class="sr-only" for="format-select">복사 형식</label>
+        <select id="format-select" class="select"></select>
+        <span id="copy-blocked-note" class="blocked-note" hidden>
+          위험 표현을 고쳐야 복사할 수 있어요
+        </span>
+      </div>
+      <div class="bottom-right">
+        <button id="btn-new" class="btn btn-ghost">새로 만들기</button>
+        <button id="btn-save" class="btn btn-secondary">이력에 저장</button>
+        <button id="btn-download" class="btn btn-secondary">.txt 내려받기</button>
+        <button id="btn-copy" class="btn btn-primary">복사하기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────── [5] 이력 ───────────────────────── -->
+<section id="screen-history" class="screen" hidden>
+  <div class="wrap wrap-wide">
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">이력</h1>
+        <p class="page-sub">팀이 만든 글을 모아서 봅니다.</p>
+      </div>
+    </div>
+
+    <div class="search-box search-box-wide">
+      <svg class="icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label class="sr-only" for="history-search">이력 검색</label>
+      <input id="history-search" type="search" class="input input-search" placeholder="지점·시술·제목으로 찾기" autocomplete="off">
+    </div>
+
+    <div id="history-empty" class="empty-state" hidden>
+      <p class="empty-title">아직 만든 글이 없어요</p>
+      <p class="empty-sub">첫 글을 만들면 여기에 쌓입니다.</p>
+      <button class="btn btn-primary" data-go="input">새 글 만들기</button>
+    </div>
+
+    <div id="history-table-wrap" class="table-wrap" hidden>
+      <table class="table">
+        <thead>
+          <tr><th>날짜</th><th>작성자</th><th>지점</th><th>시술</th><th>제목</th><th>플랫폼</th><th>상태</th></tr>
+        </thead>
+        <tbody id="history-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- 진행 중 안내 -->
+<div id="loading" class="loading" hidden>
+  <div class="loading-card">
+    <div class="spinner" aria-hidden="true"></div>
+    <p id="loading-text" class="loading-text">준비하고 있어요…</p>
+  </div>
+</div>
+
+<!-- 짧은 알림 -->
+<div id="toast" class="toast" hidden></div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

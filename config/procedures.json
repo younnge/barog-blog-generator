@@ -1086,7 +1086,7 @@
         "name": "헤어컬러피부",
         "aliases": [],
         "signature": false,
-        "active": true
+        "active": false
       }
     ]
   },
@@ -1378,6 +1378,16 @@
     "description": "재생·안티에이징 주사 및 부스터",
     "active": true,
     "items": [
+      {
+        "id": "antiaging-032",
+        "name": "바로그 코어 레이저",
+        "aliases": [
+          "코어레이저",
+          "바로그코어"
+        ],
+        "signature": true,
+        "active": true
+      },
       {
         "id": "antiaging-001",
         "name": "PDRN주사",
