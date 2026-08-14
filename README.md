@@ -8,8 +8,20 @@
 
 ## 지금 상태
 
-**Phase 1 / 1단계 완료** — 백엔드 뼈대 + 로그인 + 기준정보 API.
-화면(2단계)과 글 생성(3단계)은 아직 없다.
+**Phase 1 / 2단계 완료** — 백엔드(1단계) + 화면 전체(2단계).
+글 생성(3단계)은 아직 없다. 화면의 키워드·제목·본문·검사 결과는 **예시 데이터**다.
+
+- 화면: https://younnge.github.io/barog-blog-generator/
+- 서버: https://barog-blog-generator-api.onrender.com
+
+### 2단계에서 아직 진짜가 아닌 것
+화면은 서버를 부르지 않는다. 3단계에서 아래 세 곳만 바꾸면 연결된다.
+
+| 위치 | 지금 | 3단계에서 |
+|---|---|---|
+| `assets/app.js` `loadConfig()` | `config/*.json` 직접 읽기 | `GET /api/config` |
+| `assets/app.js` 잠금 화면 `submit` | 아무 비밀번호나 통과 | `POST /api/auth` + 토큰 저장 |
+| `assets/app.js` `SAMPLE` | 예시 키워드·제목·본문·검사 결과 | `/api/keywords` `/api/titles` `/api/draft` `/api/compliance` |
 
 | 주소 | 하는 일 | 로그인 필요 |
 |---|---|---|
@@ -103,9 +115,22 @@ copy server\.env.example server\.env
 .\.venv\Scripts\python.exe -m server.smoke_test https://<서비스주소>.onrender.com
 ```
 
+## 화면 로컬에서 보기
+
+빌드 도구가 없어 파일만 열면 되지만, `fetch`로 JSON을 읽으므로 간단한 서버가 필요하다.
+
+```
+py -3 -m http.server 5500
+```
+
+브라우저에서 `http://localhost:5500` 을 연다.
+
 ## 파일 구조
 
 ```
+index.html         화면 전체 (6개 화면)
+assets/styles.css  디자인 토큰 · 컴포넌트
+assets/app.js      화면 로직 · 상태 · 렌더링
 config/            기준정보 JSON (화면 버튼의 원본)
 server/
   main.py          앱 진입점, CORS, 에러 문구
