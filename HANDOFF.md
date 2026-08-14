@@ -1,6 +1,9 @@
 # 인수인계 요약
 
-> 작성일 2026-08-14 · 상태: **`SPEC.md` §15 1단계 구현 완료 (Render 배포 대기)** · 다음 할 일: §15 2단계 (프론트 정적 화면)
+> 작성일 2026-08-14 · 상태: **`SPEC.md` §15 1단계 완료 — Render 배포·검증까지 끝남** · 다음 할 일: §15 2단계 (프론트 정적 화면)
+>
+> 서버 주소: `https://barog-blog-generator-api.onrender.com` (무료 플랜)
+> 저장소: `younnge/barog-blog-generator` (Public)
 
 ---
 
