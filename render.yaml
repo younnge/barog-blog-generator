@@ -23,6 +23,10 @@ services:
       # 토큰 서명키 (랜덤 문자열). 대시보드에서 입력.
       - key: SESSION_SECRET
         sync: false
+      # Claude API 키. 대시보드에서 입력. 저장소에는 절대 적지 않는다.
+      # 이 값이 없으면 로그인 단계에서 '아직 준비가 덜 됐어요' 가 뜬다.
+      - key: ANTHROPIC_API_KEY
+        sync: false
       # 화면이 배포될 주소. 여기 적힌 주소에서만 서버를 호출할 수 있다.
       - key: ALLOWED_ORIGINS
         value: https://younnge.github.io
