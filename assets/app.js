@@ -1107,12 +1107,18 @@ function renderHistory() {
   if (filtered.length === 0) {
     const empty = $('#history-empty');
     empty.hidden = false;
+    // 빈 화면에서도 다음에 무엇을 하면 되는지 버튼으로 알려준다
+    const action = $('#btn-empty-action');
     if (query) {
       empty.querySelector('.empty-title').textContent = '찾는 글이 없어요';
-      empty.querySelector('.empty-sub').textContent = '다른 말로 검색해 보세요.';
+      empty.querySelector('.empty-sub').textContent = `'${query}' 로는 나오는 글이 없어요. 다른 말로 찾아볼까요?`;
+      action.textContent = '검색어 지우기';
+      action.removeAttribute('data-go');
     } else {
       empty.querySelector('.empty-title').textContent = '아직 만든 글이 없어요';
       empty.querySelector('.empty-sub').textContent = '첫 글을 만들면 여기에 쌓입니다.';
+      action.textContent = '새 글 만들기';
+      action.setAttribute('data-go', 'input');
     }
     return;
   }
@@ -1520,6 +1526,12 @@ function bindEvents() {
   });
 
   $('#history-search').addEventListener('input', renderHistory);
+
+  $('#btn-empty-action').addEventListener('click', () => {
+    if ($('#btn-empty-action').hasAttribute('data-go')) return;  // 화면 이동은 공용 핸들러가 맡는다
+    $('#history-search').value = '';
+    renderHistory();
+  });
 }
 
 // ─────────────────────────── 시작 ───────────────────────────

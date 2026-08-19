@@ -18,9 +18,14 @@
   --text-sub:  #6B625C;
   --border:    #E5E0DC;
 
-  --danger:    #C4453D;
+  --danger:    #C4453D;   /* 흰 배경 위 4.92:1 */
   --warn:      #B4761F;
   --success:   #4A7C59;
+
+  /* 옅은 배경 위에 올릴 때 쓰는 어두운 변형. 원색 그대로는 대비가 모자란다. */
+  --danger-on-tint:  #B03A32;
+  --warn-on-tint:    #94601A;
+  --success-on-tint: #457352;
 
   --radius:    14px;
   --radius-sm: 10px;
@@ -95,7 +100,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn-ghost:hover { background: var(--brand-50); color: var(--brand-700); }
 
 .btn-lg { min-height: 52px; padding: 0 32px; font-size: 16px; }
-.btn-sm { min-height: 36px; padding: 0 14px; font-size: 14px; }
+/* 작아 보이되 누르는 영역은 44px 을 지킨다 */
+.btn-sm { min-height: 44px; padding: 0 14px; font-size: 14px; }
 .btn-block { width: 100%; }
 
 /* ─────────────── 입력 ─────────────── */
@@ -131,10 +137,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .input-search { padding-left: 42px; padding-right: 38px; }
 .input-search::-webkit-search-cancel-button { display: none; }
 .search-clear {
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  width: 28px; height: 28px; border: 0; border-radius: 50%;
-  background: var(--brand-100); color: var(--brand-700);
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  /* 보이는 동그라미는 28px 이지만 누르는 영역은 44px 을 확보한다 */
+  width: 44px; height: 44px; border: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: none; color: var(--brand-700);
   cursor: pointer; font-size: 18px; line-height: 1;
+}
+.search-clear::before {
+  content: ''; position: absolute; width: 28px; height: 28px;
+  border-radius: 50%; background: var(--brand-100); z-index: -1;
 }
 .search-box-wide { max-width: 420px; }
 
@@ -207,7 +219,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--brand-100); color: var(--brand-700); font-size: 13px; font-weight: 700;
 }
 .step.is-current { background: var(--brand-100); color: var(--brand-700); font-weight: 600; }
-.step.is-current .step-num { background: var(--brand-400); color: #FFFFFF; }
+/* 브랜드 원색(--brand-400) 위에 흰 글씨를 올리지 않는다 (대비 2.65:1). --brand-600 은 5.61:1 */
+.step.is-current .step-num { background: var(--brand-600); color: #FFFFFF; }
 .step.is-done .step-num { background: var(--brand-600); color: #FFFFFF; }
 
 /* 입력 묶음 */
@@ -361,9 +374,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .panel-foot { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-sub); line-height: 1.6; }
 
 .badge { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-.badge-danger  { background: #FBEAE9; color: var(--danger); }
-.badge-warn    { background: #FDF3E3; color: var(--warn); }
-.badge-success { background: #EDF4EF; color: var(--success); }
+.badge-danger  { background: #FBEAE9; color: var(--danger-on-tint); }
+.badge-warn    { background: #FDF3E3; color: var(--warn-on-tint); }
+.badge-success { background: #EDF4EF; color: var(--success-on-tint); }
 
 .issue-list { max-height: 460px; overflow-y: auto; }
 .issue {
@@ -432,8 +445,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: inline-block; padding: 3px 10px; border-radius: 999px;
   font-size: 12px; font-weight: 700;
 }
-.tag-ok   { background: #EDF5EF; color: var(--success); }
-.tag-warn { background: #FDF6EC; color: var(--warn); }
+.tag-ok   { background: #EDF5EF; color: var(--success-on-tint); }
+.tag-warn { background: #FDF6EC; color: var(--warn-on-tint); }
 
 /* 이력 한 건 자세히 보기 */
 .detail {
@@ -487,11 +500,29 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (max-width: 640px) {
   .wrap { padding: 0 16px; }
   .screen { padding: 24px 0 60px; }
+  /* 하단 고정 바가 두 줄로 늘어나므로 가릴 만큼 더 비워둔다 */
+  #screen-result { padding-bottom: 190px; }
   .page-head { flex-direction: column; }
   .summary-bar { position: static; }
+
   .bottom-inner { justify-content: center; }
+  .bottom-left { width: 100%; }
+  .bottom-left .select { flex: 1; }
   .bottom-right { width: 100%; }
-  .bottom-right .btn { flex: 1; }
+  /* 버튼 4개를 한 줄에 밀어넣으면 글씨가 잘린다. 두 개씩 나눈다. */
+  .bottom-right .btn { flex: 1 1 calc(50% - 4px); }
+
+  .result-title { font-size: 22px; }
+  .section-heading { font-size: 18px; }
+
+  /* 이력 자세히 보기 */
+  .detail { padding: 20px 18px; }
+  .detail-head { flex-direction: column; align-items: stretch; }
+  .detail-actions { width: 100%; }
+  .detail-actions .btn { flex: 1; }
+
+  /* 시술 목록이 화면을 다 먹지 않게 */
+  .chips-scroll { max-height: 200px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
