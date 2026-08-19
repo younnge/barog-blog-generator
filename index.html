@@ -69,6 +69,13 @@
     <!-- 30일 내 중복 안내 -->
     <div id="dup-banner" class="banner banner-warn" hidden></div>
 
+    <!-- 글 목적 (모드) — 이 선택이 아래 항목 구성을 바꾼다 (SPEC §5.6) -->
+    <section class="field">
+      <h2 class="field-title">글 목적 <span class="req">필수</span></h2>
+      <div id="group-mode" class="chips" role="group" aria-label="글 목적 선택"></div>
+      <p id="mode-note" class="help"></p>
+    </section>
+
     <!-- 지점 -->
     <section class="field">
       <h2 class="field-title">지점 <span class="req">필수</span></h2>
@@ -129,11 +136,11 @@
     <!-- 고급 옵션 (접힘 기본) -->
     <details class="advanced">
       <summary class="advanced-summary">
-        <span>이벤트·가격 정보나 참고자료 넣기</span>
+        <span id="advanced-title">이벤트·가격 정보나 참고자료 넣기</span>
         <span class="advanced-hint">선택</span>
       </summary>
       <div class="advanced-body">
-        <div class="stack-sm">
+        <div id="cta-field" class="stack-sm">
           <label class="sub-label" for="input-cta">이벤트·가격·예약 안내</label>
           <textarea id="input-cta" class="input textarea" rows="3" maxlength="500"
             placeholder="예) 8월 한 달 첫 방문 상담 무료 / 예약은 프로필 링크로"></textarea>

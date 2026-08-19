@@ -1,26 +1,52 @@
 /* ============================================================
-   바로그 블로그 글 만들기 — 화면 로직 (2단계)
+   바로그 블로그 글 만들기 — 화면 로직 (3단계)
 
-   이 단계에서는 서버를 부르지 않는다.
-   - 기준정보: config/*.json 을 직접 읽어 버튼을 그린다
-   - 키워드·제목·본문·의료법 검사: 화면 확인용 예시 데이터 (아래 SAMPLE)
-   3단계에서 SAMPLE 부분과 loadConfig() 만 서버 호출로 바꾸면 된다.
+   - 기준정보·키워드·제목·본문: 서버(FastAPI)를 부른다
+   - API 키는 서버 환경변수에만 있다. 이 파일에는 키가 없다.
+   - 의료법 검사는 4단계에서 붙인다 (지금은 SAMPLE.issues 사용)
    ============================================================ */
 
 'use strict';
+
+// ─────────────────────────── 서버 주소 ───────────────────────────
+
+// 로컬에서 화면을 띄웠을 때는 내 컴퓨터의 서버를, 배포된 화면에서는 Render 서버를 부른다.
+const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
+const API_BASE = IS_LOCAL
+  ? 'http://127.0.0.1:8001'
+  : 'https://barog-blog-generator-api.onrender.com';
 
 // ─────────────────────────── 저장 키 ───────────────────────────
 
 const KEY_DRAFT_STATE = 'barog.draft';       // 작성 중이던 입력 (새로고침 대비)
 const KEY_LAST_SETTING = 'barog.lastSetting'; // 직전 설정 불러오기
 const KEY_HISTORY = 'barog.history';         // 이력 (6단계에서 서버 저장으로 교체)
-const KEY_UNLOCKED = 'barog.unlocked';       // 잠금 해제 여부 (3단계에서 토큰으로 교체)
+const KEY_TOKEN = 'barog.token';             // 로그인 토큰 (30일)
+
+// ─────────────────────────── 글 목적 (모드) ───────────────────────────
+
+// SPEC §5.6. 이 선택이 입력 항목 구성과 서버 프롬프트를 바꾼다.
+const MODES = [
+  {
+    id: 'information',
+    name: '정보성',
+    description: '시술 원리·관리법 설명',
+    note: '가격·이벤트·예약 유도가 들어가지 않아요. 자사 홈페이지나 해외 사이트, AI 검색에 걸리게 하는 글이에요.',
+  },
+  {
+    id: 'promotion',
+    name: '홍보성',
+    description: '이벤트·가격 안내 포함',
+    note: '이벤트와 예약 안내를 넣을 수 있어요. 국내 네이버 블로그용이에요.',
+  },
+];
 
 // ─────────────────────────── 상태 ───────────────────────────
 
 let config = null;
 
 const state = {
+  mode: 'information',
   branch: null,
   category: null,
   procedure: null,
@@ -68,12 +94,6 @@ function hideLoading() {
   $('#loading').hidden = true;
 }
 
-/** 진행 중인 것처럼 보이게 잠깐 기다린다. 3단계에서 실제 서버 호출로 바뀐다. */
-function pretendWork(text, ms = 700) {
-  showLoading(text);
-  return new Promise((resolve) => setTimeout(() => { hideLoading(); resolve(); }, ms));
-}
-
 function saveLocal(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 저장 공간이 없으면 그냥 넘어간다 */ }
 }
@@ -92,35 +112,68 @@ function saveDraftState() {
 
 /**
  * 3단계에서 이 함수만 GET /api/config 호출로 바꾼다.
- * 응답 모양(branches/procedures/personas/audiences/tones/platforms/lengths)은 서버와 동일하게 맞춰 두었다.
+ * 응답 모양(branches/procedures/personas/audiences/tones/platforms/lengths)은 서버가 정한다.
  */
+
+// ─────────────────────────── 서버 호출 ───────────────────────────
+
+/** 로그인 토큰. 없으면 빈 문자열. */
+function getToken() {
+  return readLocal(KEY_TOKEN, '') || '';
+}
+
+/** 토큰이 만료·무효라서 다시 로그인해야 하는 상황. */
+class NeedsLogin extends Error {}
+
+/**
+ * 서버를 부른다. 실패하면 화면에 그대로 보여줄 한국어 문장을 담아 던진다.
+ * 서버가 내려주는 message 를 우선 쓰고, 없을 때만 기본 문장을 쓴다.
+ */
+async function api(path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (e) {
+    // 네트워크가 끊겼거나 서버가 자고 있는 경우
+    throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 눌러볼까요?');
+  }
+
+  if (res.status === 401) {
+    saveLocal(KEY_TOKEN, '');
+    throw new NeedsLogin('로그인이 만료됐어요. 비밀번호를 다시 입력해 주세요.');
+  }
+
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = null; }
+
+  if (!res.ok) {
+    throw new Error((data && data.message) || '잠시 문제가 생겼어요. 다시 눌러볼까요?');
+  }
+  return data;
+}
+
+/** 무료 플랜은 한동안 요청이 없으면 잠든다. 첫 화면에서 미리 깨워둔다. */
+async function wakeServer() {
+  try {
+    await fetch(`${API_BASE}/api/health`, { method: 'GET' });
+  } catch (e) {
+    // 깨우기는 실패해도 그냥 넘어간다. 실제 요청에서 다시 안내한다.
+  }
+}
+
 async function loadConfig() {
-  const names = ['branches', 'procedures', 'personas', 'audiences', 'tones'];
-  const loaded = await Promise.all(
-    names.map((name) => fetch(`config/${name}.json`).then((res) => {
-      if (!res.ok) throw new Error(name);
-      return res.json();
-    }))
-  );
+  const result = await api('/api/config');
 
-  const result = {};
-  names.forEach((name, i) => { result[name] = loaded[i]; });
-
-  // 플랫폼·분량은 서버가 기준을 갖는 값이다. 2단계에서는 같은 모양으로 여기에 둔다.
-  result.platforms = [
-    { id: 'naver', name: '네이버 블로그', description: '스마트에디터 붙여넣기용', active: true },
-    { id: 'wordpress', name: '워드프레스·자사 홈페이지', description: '마크다운 + HTML', active: true },
-    { id: 'sns', name: '인스타·스레드', description: '캡션형으로 짧게', active: true },
-    { id: 'blog-md', name: '티스토리·브런치', description: '마크다운', active: true },
-  ];
-  result.lengths = [
-    { id: 'short', name: '짧게', description: '약 1,200자', target_chars: 1200, active: true },
-    { id: 'medium', name: '보통', description: '약 2,000자', target_chars: 2000, active: true },
-    { id: 'long', name: '길게', description: '약 3,000자', target_chars: 3000, active: true },
-  ];
-
-  // active: false 인 항목은 화면에 그리지 않는다 (지운 지점·시술도 과거 이력을 위해 JSON에는 남아 있다)
-  const onlyActive = (list) => list.filter((item) => item.active !== false);
+  // active: false 인 항목은 서버가 이미 걸러서 내려준다. 혹시 몰라 한 번 더 거른다.
+  const onlyActive = (list) => (list || []).filter((item) => item.active !== false);
   result.branches = onlyActive(result.branches);
   result.personas = onlyActive(result.personas);
   result.audiences = onlyActive(result.audiences);
@@ -191,7 +244,9 @@ function renderChipGroup(selector, items, stateKey, onPick) {
     }
 
     chip.addEventListener('click', () => {
-      state[stateKey] = (state[stateKey] === item.id) ? null : item.id;
+      // 글 목적은 해제할 수 없다. 항상 둘 중 하나가 선택돼 있어야 한다.
+      const canClear = stateKey !== 'mode';
+      state[stateKey] = (canClear && state[stateKey] === item.id) ? null : item.id;
       Array.from(box.children).forEach((c) => {
         c.setAttribute('aria-pressed', String(c.dataset.id === state[stateKey]));
       });
@@ -332,7 +387,7 @@ function updateSummary() {
 function validateInput() {
   const needCustom = state.persona === 'custom' && !state.personaCustom.trim();
   const ready = Boolean(
-    state.branch && state.procedure && state.persona &&
+    state.mode && state.branch && state.procedure && state.persona &&
     state.audience && state.tone && state.platform && state.length
   ) && !needCustom;
 
@@ -374,85 +429,11 @@ function updateDuplicateBanner() {
   banner.hidden = false;
 }
 
-// ─────────────────────────── 예시 데이터 (3단계에서 교체) ───────────────────────────
+// ─────────────────────────── 의료법 검사 예시 (4단계에서 교체) ───────────────────────────
 
+// 의료법 검사는 아직 서버에 없다. 결과 화면 모양을 확인할 수 있게 예시를 남겨둔다.
 const SAMPLE = {
-  /** 키워드 후보 — 실제로는 POST /api/keywords 응답 */
-  keywords(ctx) {
-    const p = ctx.procedureName;
-    const b = ctx.branchName.replace(/점$/, '');
-    return [
-      { text: `${p} 효과`, intent: '정보형' },
-      { text: `${p} 가격`, intent: '비교형' },
-      { text: `${b} ${p}`, intent: '예약형' },
-      { text: `${p} 후기`, intent: '후기형' },
-      { text: `${p} 주기`, intent: '정보형' },
-      { text: `${p} 통증`, intent: '정보형' },
-      { text: `${p} 회복기간`, intent: '정보형' },
-      { text: `${p} 부작용`, intent: '정보형' },
-      { text: `${p} 비교`, intent: '비교형' },
-      { text: `${p} 추천`, intent: '비교형' },
-      { text: `${p} 관리법`, intent: '정보형' },
-      { text: `${b} 피부과`, intent: '예약형' },
-    ];
-  },
-
-  /** 제목 후보 — 실제로는 POST /api/titles 응답 */
-  titles(ctx) {
-    const p = ctx.procedureName;
-    const k = ctx.keywords[0] || p;
-    return [
-      { text: `${p}, 처음이라면 이것부터 확인하세요`, hook: '고민 짚어주기' },
-      { text: `${p} 받기 전 꼭 알아야 할 5가지`, hook: '숫자 나열형' },
-      { text: `${k} 궁금하셨죠? 상담실장이 정리했습니다`, hook: '질문 던지기' },
-      { text: `${p} 주기와 관리법, 한 번에 정리`, hook: '정보 정리형' },
-      { text: `${ctx.branchName}에서 ${p} 상담할 때 가장 많이 듣는 질문`, hook: '현장 경험형' },
-    ];
-  },
-
-  /** 본문 — 실제로는 POST /api/draft 응답 (SSE 스트리밍) */
-  draft(ctx) {
-    const p = ctx.procedureName;
-    return {
-      sections: [
-        {
-          heading: '이런 고민으로 오십니다',
-          body: `${ctx.audienceName} 분들이 ${p} 상담을 받으러 오실 때 가장 먼저 꺼내는 이야기가 있습니다.\n` +
-                '거울을 볼 때마다 신경 쓰이는데, 막상 병원에 오려니 뭘 물어봐야 할지 모르겠다는 말씀이에요.\n' +
-                '오늘은 그 첫 질문들을 순서대로 정리해 보겠습니다.',
-        },
-        {
-          heading: `${p}는 어떤 시술인가요`,
-          body: `${p}는 피부 상태와 목표에 따라 설정을 달리해 진행합니다.\n` +
-                '같은 이름의 시술이라도 어떤 부위에, 어느 정도 강도로 하느냐에 따라 과정이 달라집니다.\n' +
-                '그래서 상담에서 피부 상태를 먼저 확인하는 과정이 중요합니다.',
-        },
-        {
-          heading: '상담에서 자주 듣는 질문',
-          body: '“얼마나 아픈가요?” — 부위와 개인차가 있어 한마디로 답하기는 어렵습니다.\n' +
-                '“며칠 쉬어야 하나요?” — 일정이 있으시면 미리 말씀해 주세요. 시기를 조절해 잡아드립니다.\n' +
-                '“몇 번 받아야 하나요?” — 목표에 따라 다릅니다. 상담 때 함께 계획을 세웁니다.',
-        },
-        {
-          heading: '시술 전후 이렇게 준비하세요',
-          body: '시술 전날에는 자극이 강한 홈케어를 잠시 쉬어주세요.\n' +
-                '시술 후에는 보습과 자외선 차단이 가장 중요합니다.\n' +
-                '평소보다 순한 제품으로 바꾸고, 궁금한 점은 언제든 문의해 주세요.',
-        },
-        {
-          heading: '상담 안내',
-          body: ctx.cta
-            ? ctx.cta
-            : '피부 상태에 맞는 방향은 상담에서 확인하실 수 있습니다.\n예약은 전화나 온라인으로 편하게 남겨주세요.',
-        },
-      ],
-      hashtags: ctx.keywords.slice(0, 5).map((k) => '#' + k.replace(/\s+/g, ''))
-        .concat(['#' + ctx.branchName, '#피부과', '#피부관리', '#' + p.replace(/\s+/g, ''), '#바로그의원']),
-      meta_description: `${p}가 처음이신 분들을 위해 상담에서 자주 나오는 질문과 준비 방법을 정리했습니다.`,
-    };
-  },
-
-  /** 의료법 검사 결과 — 실제로는 POST /api/compliance 응답 */
+  /** 검사 결과 — 4단계에서 POST /api/compliance 응답으로 바꾼다 */
   issues() {
     return [
       {
@@ -476,6 +457,58 @@ const SAMPLE = {
     ];
   },
 };
+
+/** 서버로 보낼 입력 묶음. id 만 보내고 이름 변환은 서버가 한다. */
+function requestPayload() {
+  return {
+    mode: state.mode,
+    lang: 'ko',
+    branch: state.branch || '',
+    procedure: state.procedure || '',
+    persona: state.persona || '',
+    persona_custom: state.personaCustom || '',
+    audience: state.audience || '',
+    tone: state.tone || '',
+    platform: state.platform || '',
+    length: state.length || 'medium',
+    reference: state.reference || '',
+    // 정보성 모드에서는 보내지 않는다. 서버도 한 번 더 비운다.
+    cta: state.mode === 'information' ? '' : (state.cta || ''),
+  };
+}
+
+/**
+ * 생성 요청을 감싼다. 실패하면 한국어 안내를 띄우고 false 를 돌려준다.
+ * 토큰이 만료됐으면 잠금 화면으로 되돌린다.
+ */
+async function runStep(steps, work) {
+  const timers = [];
+  showLoading(steps[0]);
+  steps.slice(1).forEach((text, i) => {
+    timers.push(setTimeout(() => showLoading(text), (i + 1) * 7000));
+  });
+
+  try {
+    return await work();
+  } catch (err) {
+    if (err instanceof NeedsLogin) {
+      lock(err.message);
+      return null;
+    }
+    toast(err.message);
+    return null;
+  } finally {
+    timers.forEach(clearTimeout);
+    hideLoading();
+  }
+}
+
+/** 서버는 해시태그를 # 없이 단어만 준다. 붙여넣을 때 쓰기 좋게 # 을 붙인다. */
+function formatHashtags(tags) {
+  return (tags || [])
+    .map((t) => '#' + String(t).replace(/^#/, '').replace(/\s+/g, ''))
+    .join(' ');
+}
 
 function currentContext() {
   const proc = findProcedure(state.procedure);
@@ -547,7 +580,7 @@ function renderTitleCards() {
     card.setAttribute('aria-pressed', String(state.title === t.text));
     card.innerHTML =
       `<span class="card-text">${escapeHtml(t.text)}</span>` +
-      `<span class="card-note">${t.text.length}자 · ${escapeHtml(t.hook)}</span>`;
+      `<span class="card-note">${t.text.length}자 · ${escapeHtml(t.hook_type || t.hook || '')}</span>`;
 
     card.addEventListener('click', () => {
       state.title = t.text;
@@ -595,10 +628,23 @@ function renderResult() {
     redo.className = 'btn btn-secondary btn-sm section-redo';
     redo.textContent = '이 부분만 다시';
     redo.addEventListener('click', async () => {
-      await pretendWork('이 부분을 다시 쓰고 있어요…', 900);
-      // 3단계에서 POST /api/draft/section 응답으로 바꾼다
-      section.body = section.body + '\n(다시 쓴 문단이 여기에 들어갑니다.)';
+      const data = await runStep(
+        ['이 부분을 다시 쓰고 있어요…'],
+        () => api('/api/draft/section', {
+          ...requestPayload(),
+          selected_keywords: state.keywords,
+          title: state.title,
+          heading: section.heading || '',
+          body: section.body,
+          instruction: '',
+        }),
+      );
+      if (!data) return;
+
+      section.heading = data.heading;
+      section.body = data.body;
       renderResult();
+      saveDraftState();
       toast('문단을 다시 썼어요');
     });
 
@@ -608,7 +654,7 @@ function renderResult() {
 
   const tags = $('#result-hashtags');
   if (state.platform === 'naver' || state.platform === 'sns') {
-    tags.textContent = state.draft.hashtags.join(' ');
+    tags.textContent = formatHashtags(state.draft.hashtags);
     tags.hidden = false;
   } else {
     tags.hidden = true;
@@ -730,7 +776,7 @@ function buildText(format) {
     });
   }
   if (format === 'naver' || format === 'sns') {
-    lines.push(state.draft.hashtags.join(' '));
+    lines.push(formatHashtags(state.draft.hashtags));
   }
   return lines.join('\n');
 }
@@ -786,18 +832,37 @@ function escapeHtml(value) {
 
 function bindEvents() {
   // 잠금 화면 — 3단계에서 POST /api/auth 호출로 바꾼다
-  $('#lock-form').addEventListener('submit', (e) => {
+  $('#lock-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const value = $('#lock-password').value.trim();
     const error = $('#lock-error');
+    const button = $('#lock-form button[type="submit"]');
+
     if (!value) {
       error.textContent = '비밀번호를 입력해 주세요.';
       error.hidden = false;
       return;
     }
+
     error.hidden = true;
-    saveLocal(KEY_UNLOCKED, true);
-    unlock();
+    button.disabled = true;
+    showLoading('들어가는 중이에요…');
+
+    try {
+      // 비밀번호 검증은 서버에서만 한다. 이 파일에는 비밀번호도 해시도 없다.
+      const auth = await api('/api/auth', { password: value });
+      saveLocal(KEY_TOKEN, auth.token);
+      $('#lock-password').value = '';
+
+      showLoading('선택 목록을 가져오고 있어요…');
+      await startApp();
+    } catch (err) {
+      error.textContent = err.message;
+      error.hidden = false;
+    } finally {
+      button.disabled = false;
+      hideLoading();
+    }
   });
 
   // 탭 · 화면 이동 버튼
@@ -852,8 +917,13 @@ function bindEvents() {
       persona: state.persona, personaCustom: state.personaCustom, audience: state.audience,
       tone: state.tone, platform: state.platform, length: state.length,
     });
-    await pretendWork('검색 키워드를 찾고 있어요…');
-    state.keywordPool = SAMPLE.keywords(currentContext());
+    const data = await runStep(
+      ['검색 키워드를 찾고 있어요…', '조금만 더 기다려 주세요…'],
+      () => api('/api/keywords', requestPayload()),
+    );
+    if (!data) return;
+
+    state.keywordPool = data.keywords;
     state.keywords = [];
     renderKeywordCards();
     updateKeywordHint();
@@ -881,8 +951,13 @@ function bindEvents() {
 
   // [2] → [3]
   $('#btn-to-titles').addEventListener('click', async () => {
-    await pretendWork('제목을 뽑고 있어요…');
-    state.titlePool = SAMPLE.titles(currentContext());
+    const data = await runStep(
+      ['제목을 뽑고 있어요…', '조금만 더 기다려 주세요…'],
+      () => api('/api/titles', { ...requestPayload(), selected_keywords: state.keywords }),
+    );
+    if (!data) return;
+
+    state.titlePool = data.titles;
     state.title = '';
     renderTitleCards();
     $('#title-edit-wrap').hidden = true;
@@ -892,8 +967,13 @@ function bindEvents() {
   });
 
   $('#btn-retry-titles').addEventListener('click', async () => {
-    await pretendWork('제목을 다시 뽑고 있어요…');
-    state.titlePool = SAMPLE.titles(currentContext());
+    const data = await runStep(
+      ['제목을 다시 뽑고 있어요…'],
+      () => api('/api/titles', { ...requestPayload(), selected_keywords: state.keywords }),
+    );
+    if (!data) return;
+
+    state.titlePool = data.titles;
     renderTitleCards();
     toast('제목을 다시 추천했어요');
   });
@@ -907,15 +987,25 @@ function bindEvents() {
 
   // [3] → [4]
   $('#btn-to-result').addEventListener('click', async () => {
-    showLoading('글 구조를 잡고 있어요…');
-    await new Promise((r) => setTimeout(r, 800));
-    showLoading('본문을 쓰고 있어요…');
-    await new Promise((r) => setTimeout(r, 1200));
-    showLoading('의료법 표현을 살펴보고 있어요…');
-    await new Promise((r) => setTimeout(r, 700));
-    hideLoading();
+    // 본문은 20~40초 걸린다. 무슨 일이 일어나는지 문장으로 계속 알린다.
+    const data = await runStep(
+      ['글 구조를 잡고 있어요…', '본문을 쓰고 있어요…', '문장을 다듬고 있어요…', '거의 다 됐어요…'],
+      () => api('/api/draft', {
+        ...requestPayload(),
+        selected_keywords: state.keywords,
+        title: state.title,
+      }),
+    );
+    if (!data) return;
 
-    state.draft = SAMPLE.draft(currentContext());
+    state.draft = {
+      sections: data.sections,
+      hashtags: data.hashtags,
+      meta_description: data.meta_description,
+      char_count: data.char_count,
+      target_chars: data.target_chars,
+    };
+    // 의료법 검사는 4단계에서 붙인다. 그때까지는 예시 결과를 보여준다.
     state.issues = SAMPLE.issues();
     renderResult();
     saveDraftState();
@@ -981,11 +1071,49 @@ function bindEvents() {
 
 // ─────────────────────────── 시작 ───────────────────────────
 
+/**
+ * 글 목적에 따라 입력 항목 구성을 바꾼다 (SPEC §5.6).
+ * - 정보성: 이벤트·가격 입력란을 숨기고, 페르소나에서 후기형을 뺀다
+ * - 홍보성: 현행 그대로
+ *
+ * 화면에서 숨기는 것은 편의일 뿐이다. 실제 차단은 서버가 한다.
+ */
+function applyMode() {
+  const mode = MODES.find((m) => m.id === state.mode) || MODES[0];
+  const isInfo = mode.id === 'information';
+
+  $('#mode-note').textContent = mode.note;
+
+  $('#cta-field').hidden = isInfo;
+  $('#advanced-title').textContent = isInfo
+    ? '참고자료 넣기'
+    : '이벤트·가격 정보나 참고자료 넣기';
+
+  // 정보성에서 후기형을 이미 고른 상태였다면 풀어준다
+  if (isInfo && state.persona === 'review') {
+    state.persona = null;
+    state.personaCustom = '';
+    toast('정보성 글에는 후기형을 쓸 수 없어 선택을 풀었어요');
+  }
+
+  renderChipGroup('#group-persona', personaChoices(), 'persona', onPersonaPicked);
+  onPersonaPicked(state.persona);
+}
+
+/** 지금 모드에서 고를 수 있는 페르소나 목록. */
+function personaChoices() {
+  if (state.mode === 'information') {
+    return config.personas.filter((p) => p.id !== 'review');
+  }
+  return config.personas;
+}
+
 function renderInputScreen() {
+  renderChipGroup('#group-mode', MODES, 'mode', () => { applyMode(); validateInput(); });
   renderChipGroup('#group-branch', config.branches, 'branch', () => updateDuplicateBanner());
   renderProcedureCategories();
   renderProcedureItems();
-  renderChipGroup('#group-persona', config.personas, 'persona', onPersonaPicked);
+  renderChipGroup('#group-persona', personaChoices(), 'persona', onPersonaPicked);
   renderChipGroup('#group-audience', config.audiences, 'audience');
   renderChipGroup('#group-tone', config.tones, 'tone');
   renderChipGroup('#group-platform', config.platforms, 'platform');
@@ -996,7 +1124,7 @@ function renderInputScreen() {
   $('#input-reference').value = state.reference || '';
   $('#ref-count').textContent = String((state.reference || '').length);
 
-  onPersonaPicked(state.persona);
+  applyMode();
   updateSummary();
   updateDuplicateBanner();
   validateInput();
@@ -1009,27 +1137,57 @@ function unlock() {
   goTo('input');
 }
 
-async function boot() {
-  try {
-    config = await loadConfig();
-  } catch (e) {
-    $('#lock-error').textContent = '화면을 불러오지 못했어요. 새로고침해 주세요.';
-    $('#lock-error').hidden = false;
-    return;
-  }
+/** 토큰이 만료됐을 때 잠금 화면으로 되돌린다. 입력해 둔 내용은 남겨둔다. */
+function lock(message) {
+  saveLocal(KEY_TOKEN, '');
+  $('#app-header').hidden = true;
+  $('#app-main').hidden = true;
+  $('#screen-lock').hidden = false;
+  $('#lock-error').textContent = message || '비밀번호를 다시 입력해 주세요.';
+  $('#lock-error').hidden = false;
+  window.scrollTo({ top: 0 });
+}
 
+/** 로그인 이후 — 기준정보를 받아 화면을 그린다. */
+async function startApp() {
+  config = await loadConfig();
   duplicateNames = findDuplicateNames(config.procedures);
 
   // 새로고침·뒤로가기에도 입력이 날아가지 않게 복원한다
   const saved = readLocal(KEY_DRAFT_STATE, null);
   if (saved) Object.assign(state, saved);
+  if (!MODES.some((m) => m.id === state.mode)) state.mode = MODES[0].id;
 
-  bindEvents();
   renderInputScreen();
   $('#btn-load-last').hidden = !readLocal(KEY_LAST_SETTING, null);
+  unlock();
+}
 
-  if (readLocal(KEY_UNLOCKED, false)) {
-    unlock();
+async function boot() {
+  bindEvents();
+
+  // 무료 플랜은 첫 요청이 느리다. 비밀번호를 치는 동안 미리 깨워둔다.
+  const waking = wakeServer();
+
+  const token = getToken();
+  if (!token) {
+    await waking;
+    return; // 잠금 화면에 그대로 머문다
+  }
+
+  // 저장된 토큰이 아직 살아 있으면 비밀번호 없이 바로 들어간다 (30일)
+  showLoading('준비하고 있어요…');
+  try {
+    await waking;
+    await startApp();
+  } catch (err) {
+    saveLocal(KEY_TOKEN, '');
+    if (!(err instanceof NeedsLogin)) {
+      $('#lock-error').textContent = err.message;
+      $('#lock-error').hidden = false;
+    }
+  } finally {
+    hideLoading();
   }
 }
 
