@@ -397,6 +397,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .bottom-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .bottom-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .blocked-note { font-size: 13px; color: var(--danger); font-weight: 600; }
+.copy-hint { font-size: 13px; color: var(--text-sub); }
+
+/* 검색 결과 요약글 (메타 설명) */
+.meta-text {
+  margin-bottom: 12px; padding: 12px 14px; border-radius: 10px;
+  background: var(--brand-50); color: var(--text);
+  font-size: 14px; line-height: 1.6;
+}
 
 /* ─────────────── 이력 ─────────────── */
 

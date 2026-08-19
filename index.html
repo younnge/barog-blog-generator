@@ -256,6 +256,15 @@
           <div id="compliance-list" class="issue-list"></div>
           <p class="panel-foot">이 검사는 도우미일 뿐이며 법률 자문이 아닙니다. 게시 전 최종 확인은 담당자 책임입니다.</p>
         </div>
+
+        <div class="panel" id="meta-panel" hidden>
+          <div class="panel-head">
+            <h2 class="panel-title">검색 결과 요약글</h2>
+          </div>
+          <p id="meta-text" class="meta-text"></p>
+          <button id="btn-copy-meta" class="btn btn-secondary btn-sm">이것만 복사</button>
+          <p class="panel-foot">홈페이지에 올릴 때 '메타 설명' 칸에 넣는 문장이에요. 본문에는 넣지 않습니다.</p>
+        </div>
       </aside>
     </div>
   </div>
@@ -265,6 +274,7 @@
       <div class="bottom-left">
         <label class="sr-only" for="format-select">복사 형식</label>
         <select id="format-select" class="select"></select>
+        <span id="copy-hint" class="copy-hint"></span>
         <span id="copy-blocked-note" class="blocked-note" hidden>
           위험 표현을 고쳐야 복사할 수 있어요
         </span>

@@ -672,7 +672,8 @@ function renderResult() {
   });
 
   const tags = $('#result-hashtags');
-  if (state.platform === 'naver' || state.platform === 'sns') {
+  const copyFormat = $('#format-select').value || state.platform;
+  if (copyFormat === 'naver' || copyFormat === 'sns') {
     tags.textContent = formatHashtags(state.draft.hashtags);
     tags.hidden = false;
   } else {
@@ -681,6 +682,13 @@ function renderResult() {
 
   renderCompliance();
   renderFormatOptions();
+
+  // 메타 설명은 본문과 성격이 달라서 따로 보여주고 따로 복사하게 한다.
+  const meta = (state.draft.meta_description || '').trim();
+  $('#meta-panel').hidden = !meta;
+  $('#meta-text').textContent = meta;
+
+  updateCopyHint();
 }
 
 /** 검사에서 잡힌 표현에 표시를 남긴다 */
@@ -838,39 +846,150 @@ function renderCompliance() {
   $('#copy-blocked-note').hidden = !blocked;
 }
 
+/** 지금 고른 형식으로 복사하면 몇 자인지 알려준다. SNS 는 길이가 중요하다. */
+function updateCopyHint() {
+  const hint = $('#copy-hint');
+  if (!state.draft) { hint.textContent = ''; return; }
+  const format = $('#format-select').value;
+  const n = buildText(format).length;
+  hint.textContent = format === 'sns'
+    ? `${n.toLocaleString()}자 · 캡션용으로 짧게 줄였어요`
+    : `${n.toLocaleString()}자`;
+}
+
 function renderFormatOptions() {
   const select = $('#format-select');
   if (select.options.length > 0) return;
-  config.platforms.forEach((p) => {
+  COPY_FORMATS.forEach((f) => {
     const option = document.createElement('option');
-    option.value = p.id;
-    option.textContent = `${p.name} 형식으로 복사`;
+    option.value = f.id;
+    option.textContent = `${f.label} 형식으로 복사`;
     select.appendChild(option);
   });
-  select.value = state.platform || 'naver';
+  // 입력 화면에서 고른 플랫폼을 기본값으로 맞춘다.
+  select.value = COPY_FORMATS.some((f) => f.id === state.platform) ? state.platform : 'naver';
 }
 
 /**
  * 플랫폼별 글 조립.
  * 5단계에서 플랫폼마다 제대로 나누고, 지금은 붙여넣어 확인할 수 있는 정도만 만든다.
  */
+// ─────────────────────────── 플랫폼별 포맷 (SPEC §7) ───────────────────────────
+
+/**
+ * 복사 형식 목록. config.platforms 에 워드프레스 HTML 변형을 하나 더 붙인다.
+ * 비개발자가 고르는 목록이라 '토글' 대신 항목을 나눠서 보여준다.
+ */
+const COPY_FORMATS = [
+  { id: 'naver',         label: '네이버 블로그' },
+  { id: 'wordpress',     label: '워드프레스·자사 홈페이지 (마크다운)' },
+  { id: 'wordpress-html', label: '워드프레스·자사 홈페이지 (HTML)' },
+  { id: 'sns',           label: '인스타·스레드 (캡션형)' },
+  { id: 'blog-md',       label: '티스토리·브런치 (마크다운)' },
+];
+
+/** 문단 안의 여러 줄바꿈을 하나로 정리한다. */
+function tidy(text) {
+  return String(text || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * 네이버 스마트에디터용.
+ * 서식 없는 순수 텍스트. 소제목은 굵기 대신 기호로 구분한다.
+ * 문단 사이는 빈 줄 하나로 고정한다 — 빈 줄이 여러 개면 에디터에서 간격이 뭉개진다.
+ */
+function buildNaver() {
+  const parts = [state.title];
+  state.draft.sections.forEach((s) => {
+    if (s.heading) parts.push('▎' + s.heading);
+    parts.push(tidy(s.body));
+  });
+  const text = parts.filter(Boolean).join('\n\n');
+
+  // 해시태그는 본문과 떨어뜨려 별도 블록으로 둔다.
+  const tags = formatHashtags(state.draft.hashtags);
+  return tags ? text + '\n\n' + tags : text;
+}
+
+/** 마크다운 (워드프레스·티스토리·브런치) */
+function buildMarkdown() {
+  const parts = ['# ' + state.title];
+  state.draft.sections.forEach((s) => {
+    if (s.heading) parts.push('## ' + s.heading);
+    parts.push(tidy(s.body));
+  });
+  return parts.filter(Boolean).join('\n\n');
+}
+
+/** HTML (워드프레스에 직접 붙여넣을 때) */
+function buildHtml() {
+  const parts = ['<h1>' + escapeHtml(state.title) + '</h1>'];
+  state.draft.sections.forEach((s) => {
+    if (s.heading) parts.push('<h2>' + escapeHtml(s.heading) + '</h2>');
+    tidy(s.body).split('\n\n').forEach((para) => {
+      const t = para.trim();
+      if (t) parts.push('<p>' + escapeHtml(t).split('\n').join('<br>') + '</p>');
+    });
+  });
+  return parts.join('\n');
+}
+
+/**
+ * 인스타·스레드용 캡션.
+ * 본문을 그대로 넣으면 너무 길다. 도입부 + 각 소제목의 첫 문장만 뽑아 짧게 재구성한다.
+ */
+function buildCaption() {
+  const MAX = 900;
+  const parts = [state.title];
+
+  state.draft.sections.forEach((s, i) => {
+    const body = tidy(s.body);
+    if (!body) return;
+    if (i === 0 && !s.heading) {
+      // 도입부는 첫 문장만
+      parts.push(firstSentence(body));
+      return;
+    }
+    const line = firstSentence(body);
+    parts.push((s.heading ? '· ' + s.heading + '\n' : '') + line);
+  });
+
+  let text = parts.filter(Boolean).join('\n\n');
+  if (text.length > MAX) text = text.slice(0, MAX).replace(/[^。.!?…]*$/, '').trim() || text.slice(0, MAX);
+
+  const tags = formatHashtags(state.draft.hashtags);
+  return tags ? text + '\n\n' + tags : text;
+}
+
+/** 첫 문장 하나만 뽑는다. 문장 끝을 못 찾으면 앞 120자. */
+function firstSentence(text) {
+  const m = text.match(/^[\s\S]*?[.!?](?=\s|$)/);
+  const out = m ? m[0] : text.slice(0, 120);
+  return out.trim();
+}
+
+/** 클립보드에 넣는다. 실패하면 다음에 할 일을 알려준다. */
+async function copyToClipboard(text, successMessage) {
+  if (!text) { toast('복사할 내용이 없어요'); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('복사했어요. ' + successMessage);
+  } catch (e) {
+    toast('복사가 안 됐어요. 글을 직접 선택해 복사해 주세요');
+  }
+}
+
 function buildText(format) {
-  const lines = [];
-  if (format === 'wordpress' || format === 'blog-md') {
-    lines.push(`# ${state.title}`, '');
-    state.draft.sections.forEach((s) => {
-      lines.push(`## ${s.heading}`, '', s.body, '');
-    });
-  } else {
-    lines.push(state.title, '');
-    state.draft.sections.forEach((s) => {
-      lines.push(`■ ${s.heading}`, '', s.body, '');
-    });
+  if (!state.draft) return '';
+  switch (format) {
+    case 'naver':          return buildNaver();
+    case 'wordpress-html': return buildHtml();
+    case 'sns':            return buildCaption();
+    default:               return buildMarkdown();   // wordpress · blog-md
   }
-  if (format === 'naver' || format === 'sns') {
-    lines.push(formatHashtags(state.draft.hashtags));
-  }
-  return lines.join('\n');
 }
 
 // ─────────────────────────── [5] 이력 ───────────────────────────
@@ -1109,26 +1228,30 @@ function bindEvents() {
 
   // 결과 화면 버튼
   $('#format-select').addEventListener('change', (e) => {
-    toast(`${e.target.selectedOptions[0].textContent.replace(' 형식으로 복사', '')} 형식으로 바꿨어요`);
+    const label = e.target.selectedOptions[0].textContent.replace(' 형식으로 복사', '');
+    updateCopyHint();
+    toast(`${label} 형식으로 바꿨어요`);
   });
 
-  $('#btn-copy').addEventListener('click', async () => {
-    const text = buildText($('#format-select').value);
-    try {
-      await navigator.clipboard.writeText(text);
-      toast('복사했어요. 붙여넣기 하세요');
-    } catch (e) {
-      toast('복사가 안 됐어요. 글을 직접 선택해 복사해 주세요');
-    }
+  $('#btn-copy').addEventListener('click', () => {
+    const format = $('#format-select').value;
+    const where = COPY_FORMATS.find((f) => f.id === format);
+    copyToClipboard(buildText(format), `${where ? where.label : ''}에 붙여넣기 하세요`);
+  });
+
+  $('#btn-copy-meta').addEventListener('click', () => {
+    copyToClipboard(state.draft.meta_description || '', '요약글을 복사했어요');
   });
 
   $('#btn-download').addEventListener('click', () => {
-    const text = buildText($('#format-select').value);
+    const format = $('#format-select').value;
+    const text = buildText(format);
+    const ext = { 'wordpress-html': 'html', wordpress: 'md', 'blog-md': 'md' }[format] || 'txt';
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${state.title.slice(0, 30) || '블로그글'}.txt`;
+    link.download = `${state.title.slice(0, 30) || '블로그글'}.${ext}`;
     link.click();
     URL.revokeObjectURL(url);
     toast('내려받았어요');
