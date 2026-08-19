@@ -1227,10 +1227,12 @@ function bindEvents() {
   });
 
   // 결과 화면 버튼
-  $('#format-select').addEventListener('change', (e) => {
-    const label = e.target.selectedOptions[0].textContent.replace(' 형식으로 복사', '');
+  $('#format-select').addEventListener('change', () => {
+    // 글자수 갱신을 먼저 한다. 안내 문구를 만들다 실패해도 숫자는 바뀌어야 한다.
     updateCopyHint();
-    toast(`${label} 형식으로 바꿨어요`);
+    renderResult();   // 해시태그 표시 여부가 형식에 따라 달라진다
+    const found = COPY_FORMATS.find((f) => f.id === $('#format-select').value);
+    if (found) toast(`${found.label} 형식으로 바꿨어요`);
   });
 
   $('#btn-copy').addEventListener('click', () => {
