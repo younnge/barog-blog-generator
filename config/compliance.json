@@ -1,0 +1,176 @@
+{
+  "version": "2026-08-19",
+  "note": "의료광고 금지 표현 사전. SPEC §6.3 의 금지 5요소 축을 따른다. 이 파일은 법률 자문이 아니며, 심의기관·법무 검토 결과가 나오면 갱신해야 한다.",
+  "elements": {
+    "1": "효과 보장·최상급·비교우위",
+    "2": "가격·이벤트·할인",
+    "3": "전후사진",
+    "4": "체험담·후기",
+    "5": "예약 유도",
+    "0": "공통 (모드 무관)"
+  },
+  "levels": {
+    "danger": "복사 차단. 반드시 고쳐야 한다.",
+    "warn": "해석에 따라 문제될 수 있다. 복사는 허용한다.",
+    "info": "표현 개선 권장."
+  },
+  "rules": [
+    {
+      "id": "e1-superlative-best",
+      "element": 1,
+      "match": ["최고의", "최고 수준", "최상의", "가장 좋은", "가장 우수한", "최상급"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "객관적 근거 없이 최상급으로 표현하면 의료광고 심의에서 문제가 됩니다.",
+      "suggestion": "많이 찾으시는"
+    },
+    {
+      "id": "e1-exclusive",
+      "element": 1,
+      "match": ["국내 유일", "유일한", "유일하게", "업계 1등", "1위", "넘버원", "국내 최초", "국내 최고"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "유일성·순위를 내세우는 표현은 배타적 광고로 해석될 수 있습니다.",
+      "suggestion": "저희가 오래 다뤄온"
+    },
+    {
+      "id": "e1-guarantee",
+      "element": 1,
+      "match": ["100%", "완치", "무조건", "반드시 좋아", "확실히 좋아", "효과를 보장", "만족 보장", "실패 없는"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "치료 효과를 단정하거나 보장하는 표현은 의료법상 금지됩니다.",
+      "suggestion": "개선에 도움이 될 수 있는"
+    },
+    {
+      "id": "e1-no-side-effect",
+      "element": 1,
+      "match": ["부작용 없는", "부작용 없이", "부작용이 없", "안전한 시술입니다", "통증 없는", "흉터 없는"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "부작용이나 통증이 없다고 단정하면 안 됩니다. 개인차가 있다는 점을 함께 써야 합니다.",
+      "suggestion": "개인차가 있을 수 있는"
+    },
+    {
+      "id": "e1-permanent",
+      "element": 1,
+      "match": ["영구적", "평생 유지", "반영구적으로", "다시는 생기지 않"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "지속 기간을 단정하는 표현은 효과 보장으로 읽힙니다.",
+      "suggestion": "관리에 따라 오래 유지될 수 있는"
+    },
+    {
+      "id": "e1-compare-others",
+      "element": 1,
+      "match": ["타 병원보다", "다른 병원보다", "타원보다", "보다 우수한", "보다 뛰어난"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "다른 의료기관과 비교하는 표현은 비방 광고로 해석될 수 있습니다.",
+      "suggestion": "저희가 중요하게 보는 점은"
+    },
+    {
+      "id": "e1-immediate",
+      "element": 1,
+      "match": ["즉시 효과", "즉효", "바로 효과가", "한 번에 해결", "단번에"],
+      "level": { "information": "warn", "promotion": "warn" },
+      "reason": "즉각적인 효과를 약속하는 표현으로 읽힐 수 있습니다.",
+      "suggestion": "비교적 빠르게 변화를 느끼시는 분도 있는"
+    },
+
+    {
+      "id": "e2-discount",
+      "element": 2,
+      "match": ["할인", "세일", "특가", "반값", "파격가", "최저가"],
+      "level": { "information": "danger", "promotion": "warn" },
+      "reason": "가격 할인 표현입니다. 정보성 글에는 넣지 않습니다. 홍보성 글이라도 과도한 할인 강조는 유인·알선으로 볼 수 있습니다.",
+      "suggestion": ""
+    },
+    {
+      "id": "e2-event",
+      "element": 2,
+      "match": ["이벤트", "프로모션", "선착순", "한정 특가", "오픈 기념"],
+      "level": { "information": "danger", "promotion": "warn" },
+      "reason": "이벤트·프로모션 고지입니다. 정보성 글에는 넣지 않습니다.",
+      "suggestion": ""
+    },
+    {
+      "id": "e2-free",
+      "element": 2,
+      "match": ["무료 시술", "무료 증정", "공짜", "1+1", "덤으로"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "금품 제공성 표현은 환자 유인·알선에 해당할 수 있습니다.",
+      "suggestion": ""
+    },
+    {
+      "id": "e2-price",
+      "element": 2,
+      "regex": "[0-9][0-9,]*\\s*(만원|원)",
+      "level": { "information": "danger", "promotion": "warn" },
+      "reason": "진료비를 표기할 때는 부가세 포함 여부와 적용 범위 같은 조건을 함께 적어야 합니다. 정보성 글에는 넣지 않습니다.",
+      "suggestion": ""
+    },
+
+    {
+      "id": "e3-before-after",
+      "element": 3,
+      "match": ["전후사진", "전후 사진", "시술 전후", "비포애프터", "비포 애프터", "before after", "변화 사진"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "치료 전후를 비교하는 사진·표현은 의료광고에서 금지됩니다.",
+      "suggestion": "시술 과정 설명"
+    },
+
+    {
+      "id": "e4-testimonial",
+      "element": 4,
+      "match": ["직접 받아봤", "제가 받아보니", "받아본 결과", "실제 후기", "생생 후기", "리얼 후기", "환자분 후기"],
+      "level": { "information": "danger", "promotion": "danger" },
+      "reason": "치료경험담은 의료광고에서 금지됩니다. 정보 전달 중심으로 바꿔주세요.",
+      "suggestion": "상담에서 자주 나오는 질문"
+    },
+    {
+      "id": "e4-result-claim",
+      "element": 4,
+      "match": ["효과 봤어요", "효과 봤습니다", "달라졌어요", "확 달라진", "인생 시술"],
+      "level": { "information": "danger", "promotion": "warn" },
+      "reason": "개인의 치료 결과를 단정적으로 서술하면 경험담 광고로 해석될 수 있습니다.",
+      "suggestion": "변화를 느끼시는 분도 있습니다"
+    },
+
+    {
+      "id": "e5-booking",
+      "element": 5,
+      "match": ["지금 예약", "예약하세요", "예약 문의", "상담 문의", "상담받아 보세요", "상담 받아보세요", "문의 주세요", "신청하세요", "방문해 보세요", "지금 바로 연락"],
+      "level": { "information": "danger", "promotion": "info" },
+      "reason": "예약·상담 유도 문구입니다. 정보성 글에는 넣지 않습니다.",
+      "suggestion": ""
+    },
+    {
+      "id": "e5-urgency",
+      "element": 5,
+      "match": ["서두르세요", "지금 아니면", "마감 임박", "얼마 남지 않"],
+      "level": { "information": "danger", "promotion": "warn" },
+      "reason": "조급함을 부추기는 표현은 환자 유인으로 해석될 수 있습니다.",
+      "suggestion": ""
+    },
+
+    {
+      "id": "e0-credential",
+      "element": 0,
+      "match": ["전문의가 직접", "전문의 시술", "명의", "권위자", "국내 최고 의료진"],
+      "level": { "information": "warn", "promotion": "warn" },
+      "reason": "의료인의 자격이나 권위를 오인하게 할 수 있는 표현입니다. 실제 전문의 자격이 있는 경우에만 정확한 진료과를 함께 씁니다.",
+      "suggestion": "담당 의료진이"
+    },
+    {
+      "id": "e0-diagnosis",
+      "element": 0,
+      "match": ["당신은 반드시", "꼭 받으셔야", "받으셔야 합니다", "치료해야 합니다"],
+      "level": { "information": "warn", "promotion": "warn" },
+      "reason": "진단이나 처방으로 읽힐 수 있는 단정적 표현입니다.",
+      "suggestion": "상태에 따라 고려해 보실 수 있습니다"
+    },
+    {
+      "id": "e0-cure",
+      "element": 0,
+      "match": ["치료됩니다", "낫습니다", "없어집니다", "사라집니다", "해결됩니다"],
+      "level": { "information": "warn", "promotion": "warn" },
+      "reason": "결과를 단정하는 서술입니다. 가능성으로 바꿔주세요.",
+      "suggestion": "개선될 수 있습니다"
+    }
+  ]
+}

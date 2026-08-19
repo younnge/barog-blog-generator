@@ -3,7 +3,7 @@
 
    - 기준정보·키워드·제목·본문: 서버(FastAPI)를 부른다
    - API 키는 서버 환경변수에만 있다. 이 파일에는 키가 없다.
-   - 의료법 검사는 4단계에서 붙인다 (지금은 SAMPLE.issues 사용)
+   - 의료법 검사: 서버가 금지어 사전 + 문맥 판정으로 본다
    ============================================================ */
 
 'use strict';
@@ -64,6 +64,7 @@ const state = {
   title: '',
   draft: null,         // {sections:[{heading, body}], hashtags:[], meta_description}
   issues: [],
+  contextChecked: true,  // 2차(문맥) 검사가 돌았는지
 };
 
 // ─────────────────────────── 도우미 ───────────────────────────
@@ -429,35 +430,6 @@ function updateDuplicateBanner() {
   banner.hidden = false;
 }
 
-// ─────────────────────────── 의료법 검사 예시 (4단계에서 교체) ───────────────────────────
-
-// 의료법 검사는 아직 서버에 없다. 결과 화면 모양을 확인할 수 있게 예시를 남겨둔다.
-const SAMPLE = {
-  /** 검사 결과 — 4단계에서 POST /api/compliance 응답으로 바꾼다 */
-  issues() {
-    return [
-      {
-        level: 'danger',
-        phrase: '부작용 없는',
-        reason: '부작용이 없다고 단정하는 표현은 의료광고에서 쓸 수 없습니다.',
-        suggestion: '개인차가 있을 수 있는',
-      },
-      {
-        level: 'warn',
-        phrase: '가장 인기 있는',
-        reason: '객관적 근거 없이 최상급으로 읽힐 수 있습니다.',
-        suggestion: '많이 문의 주시는',
-      },
-      {
-        level: 'info',
-        phrase: '지역명 반복',
-        reason: '지역명과 시술명이 반복되면 검색 어뷰징으로 볼 수 있습니다.',
-        suggestion: '문맥에 맞게 한두 번만 쓰기',
-      },
-    ];
-  },
-};
-
 /** 서버로 보낼 입력 묶음. id 만 보내고 이름 변환은 서버가 한다. */
 function requestPayload() {
   return {
@@ -508,6 +480,47 @@ function formatHashtags(tags) {
   return (tags || [])
     .map((t) => '#' + String(t).replace(/^#/, '').replace(/\s+/g, ''))
     .join(' ');
+}
+
+/** 검사에 보낼 본문 전체. 소제목도 함께 본다(소제목에도 금지 표현이 들어간다). */
+function draftText() {
+  if (!state.draft) return '';
+  return state.draft.sections
+    .map((s) => (s.heading ? s.heading + '\n' : '') + s.body)
+    .join('\n\n');
+}
+
+/**
+ * 의료법 검사를 돌린다.
+ * quick=true 면 금지어 사전만 본다(문구를 바꾼 뒤 즉시 재확인용).
+ * 실패해도 화면은 살려두되, 검사를 못 했다는 사실은 숨기지 않는다.
+ */
+async function runCompliance(quick) {
+  const text = draftText();
+  if (!text.trim()) return;
+
+  try {
+    const data = await api('/api/compliance', {
+      text,
+      mode: state.mode,
+      lang: 'ko',
+      quick: Boolean(quick),
+    });
+    state.issues = data.issues;
+    state.contextChecked = data.context_checked;
+  } catch (err) {
+    if (err instanceof NeedsLogin) { lock(err.message); return; }
+    // 검사를 못 했으면 통과한 것처럼 보이면 안 된다. 복사를 막고 다시 시도하게 한다.
+    state.issues = [{
+      level: 'danger',
+      phrase: '',
+      reason: '표현 검사를 하지 못했어요. 다시 검사해 주세요.',
+      suggestion: '',
+      source: 'error',
+    }];
+    state.contextChecked = false;
+    toast(err.message);
+  }
 }
 
 function currentContext() {
@@ -643,6 +656,12 @@ function renderResult() {
 
       section.heading = data.heading;
       section.body = data.body;
+
+      // 다시 쓴 문단에 새 위험이 들어갔을 수 있다. 반드시 다시 검사한다.
+      showLoading('다시 살펴보고 있어요…');
+      await runCompliance(false);
+      hideLoading();
+
       renderResult();
       saveDraftState();
       toast('문단을 다시 썼어요');
@@ -669,12 +688,55 @@ function highlightIssues(text) {
   let html = escapeHtml(text);
   state.issues.forEach((issue) => {
     if (issue.resolved || issue.level === 'info') return;
+    if (!issue.phrase) return;   // 검사 실패 항목은 본문에 표시할 게 없다
     const safe = escapeHtml(issue.phrase);
     if (!html.includes(safe)) return;
     const cls = issue.level === 'warn' ? ' class="is-warn"' : '';
     html = html.split(safe).join(`<mark${cls}>${safe}</mark>`);
   });
   return html;
+}
+
+/** 본문 전체에서 한 표현을 바꾼다. 소제목도 함께 본다. */
+function replacePhrase(phrase, replacement) {
+  if (!phrase || !state.draft) return;
+  state.draft.sections.forEach((sec) => {
+    sec.heading = sec.heading.split(phrase).join(replacement);
+    sec.body = sec.body.split(phrase).join(replacement);
+  });
+}
+
+/** 지적된 표현이 들어 있는 문단을 통째로 다시 쓴다. */
+async function rewriteSectionFor(issue) {
+  const index = state.draft.sections.findIndex(
+    (sec) => sec.heading.includes(issue.phrase) || sec.body.includes(issue.phrase)
+  );
+  if (index < 0) { toast('그 표현을 본문에서 찾지 못했어요'); return; }
+
+  const target = state.draft.sections[index];
+  const data = await runStep(
+    ['이 문단을 다시 쓰고 있어요…'],
+    () => api('/api/draft/section', {
+      ...requestPayload(),
+      selected_keywords: state.keywords,
+      title: state.title,
+      heading: target.heading || '',
+      body: target.body,
+      instruction: `'${issue.phrase}' 라는 표현과 그 내용을 완전히 빼고 다시 써라. ${issue.reason}`,
+    }),
+  );
+  if (!data) return;
+
+  target.heading = data.heading;
+  target.body = data.body;
+
+  showLoading('다시 살펴보고 있어요…');
+  await runCompliance(false);
+  hideLoading();
+
+  renderResult();
+  saveDraftState();
+  toast('문단을 다시 썼어요');
 }
 
 function renderCompliance() {
@@ -703,31 +765,61 @@ function renderCompliance() {
       `</div>` +
       `<p class="issue-reason">${escapeHtml(issue.reason)}</p>`;
 
+    const fix = document.createElement('div');
+    fix.className = 'issue-fix';
+
     if (issue.suggestion) {
-      const fix = document.createElement('div');
-      fix.className = 'issue-fix';
       fix.innerHTML = `<span class="issue-fix-text">→ ${escapeHtml(issue.suggestion)}</span>`;
 
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn btn-secondary btn-sm';
       btn.textContent = '이 문구로 바꾸기';
-      btn.addEventListener('click', () => {
-        // 본문에서 표현을 바꾸고 다시 검사한다 (4단계에서 서버 재검사로 교체)
-        state.draft.sections.forEach((s) => {
-          s.body = s.body.split(issue.phrase).join(issue.suggestion);
-        });
-        issue.resolved = true;
+      btn.addEventListener('click', async () => {
+        replacePhrase(issue.phrase, issue.suggestion);
+        // 바꾼 뒤 곧바로 다시 검사한다. 사람이 스스로 해결됐다고 표시하지 못하게 한다.
+        showLoading('다시 살펴보고 있어요…');
+        await runCompliance(true);
+        hideLoading();
         renderResult();
         toast('문구를 바꿨어요');
       });
-
       fix.appendChild(btn);
-      el.appendChild(fix);
+    } else if (issue.phrase) {
+      // 대안 문구가 없는 항목(가격·이벤트·예약 유도 등)은 문장을 통째로 다시 써야 한다.
+      fix.innerHTML = '<span class="issue-fix-text">이 표현은 빼야 해요</span>';
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-secondary btn-sm';
+      btn.textContent = '이 문단 다시 쓰기';
+      btn.addEventListener('click', () => rewriteSectionFor(issue));
+      fix.appendChild(btn);
+    } else {
+      // 검사 자체가 실패한 경우
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-secondary btn-sm';
+      btn.textContent = '다시 검사하기';
+      btn.addEventListener('click', async () => {
+        showLoading('의료법 표현을 살펴보고 있어요…');
+        await runCompliance(false);
+        hideLoading();
+        renderResult();
+      });
+      fix.appendChild(btn);
     }
 
+    el.appendChild(fix);
     list.appendChild(el);
   });
+
+  if (state.contextChecked === false && open.length > 0) {
+    const note = document.createElement('p');
+    note.className = 'issue-empty';
+    note.textContent = '문맥 검사는 하지 못했어요. 눈으로 한 번 더 확인해 주세요.';
+    list.appendChild(note);
+  }
 
   if (danger.length > 0) {
     badge.className = 'badge badge-danger';
@@ -1005,8 +1097,11 @@ function bindEvents() {
       char_count: data.char_count,
       target_chars: data.target_chars,
     };
-    // 의료법 검사는 4단계에서 붙인다. 그때까지는 예시 결과를 보여준다.
-    state.issues = SAMPLE.issues();
+    // 본문이 나왔으면 곧바로 검사한다. 검사 없이 결과 화면을 보여주지 않는다.
+    showLoading('의료법 표현을 살펴보고 있어요…');
+    await runCompliance(false);
+    hideLoading();
+
     renderResult();
     saveDraftState();
     goTo('result');

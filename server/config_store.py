@@ -22,6 +22,10 @@ CONFIG_FILES = {
     "tones": "tones.json",
 }
 
+# 금지어 사전은 서버에서만 쓴다. /api/config 로 내려보내지 않는다.
+# (화면에 사전을 통째로 주면 무엇을 검사하는지 드러나고, 쓸 일도 없다)
+COMPLIANCE_FILE = "compliance.json"
+
 # 플랫폼·분량은 출력 포맷·목표 글자수와 직접 묶여 있어 서버가 기준을 갖는다.
 # 다만 프론트는 이 값도 API 응답으로 받아 그린다(화면에는 하드코딩하지 않는다).
 PLATFORMS = [
@@ -83,6 +87,11 @@ def _active_procedures(categories: list[dict]) -> list[dict]:
         pruned["items"] = _active_only(category.get("items", []))
         result.append(pruned)
     return result
+
+
+def load_compliance() -> dict[str, Any]:
+    """금지어 사전. 파일을 고치면 서버 재시작 없이 반영된다."""
+    return _load_file("compliance", COMPLIANCE_FILE)
 
 
 def load_all() -> dict[str, Any]:

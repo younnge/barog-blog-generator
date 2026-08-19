@@ -1,4 +1,4 @@
-"""1~3단계 점검 스크립트.
+"""1~4단계 점검 스크립트.
 
 서버를 띄우지 않고 바로 확인한다.
 
@@ -113,6 +113,77 @@ def check_generation_guards(client, token: str, config: dict) -> None:
     check(allowed.status_code != 400, "홍보성 모드에서는 후기형 페르소나가 허용된다")
 
     check_prompt_guards(config)
+    check_compliance(client, token)
+
+
+def check_compliance(client, token: str) -> None:
+    """4단계 — 의료법 검사가 실제로 잡고 막는지 본다 (SPEC §6).
+
+    Claude 를 부르지 않고 확인할 수 있게 quick(규칙 검사만) 으로 돌린다.
+    """
+    from . import compliance
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    check(
+        client.post("/api/compliance", json={"text": "아무 글"}).status_code == 401,
+        "토큰 없이 검사를 요청하면 막힌다",
+    )
+    check(
+        client.post("/api/compliance", json={"text": "  "}, headers=headers).status_code == 400,
+        "빈 글로 검사를 요청하면 걸러진다",
+    )
+
+    bad = "국내 유일의 최고의 장비로 부작용 없는 시술. 100% 만족. 8월 30% 할인 이벤트, 시술비 150,000원. 지금 예약하세요."
+
+    res = client.post(
+        "/api/compliance",
+        json={"text": bad, "mode": "information", "quick": True},
+        headers=headers,
+    )
+    check(res.status_code == 200, "검사가 응답한다")
+    if res.status_code != 200:
+        return
+
+    info = res.json()
+    check(info["blocked"] is True, "위험 표현이 있으면 복사를 막는다고 알린다")
+    check(info["counts"]["danger"] >= 8, f"위험 표현을 충분히 잡는다 (실제 {info['counts']['danger']}건)")
+
+    phrases = [i["phrase"] for i in info["issues"]]
+    for expected in ["국내 유일", "부작용 없는", "100%", "할인", "전후사진" if "전후사진" in bad else "지금 예약"]:
+        check(expected in phrases, f"'{expected}' 를 잡아낸다")
+
+    check(
+        all(i["phrase"] in bad for i in info["issues"]),
+        "지적한 문구는 모두 본문에 실제로 있는 그대로다",
+    )
+
+    # 같은 글이라도 모드에 따라 등급이 달라야 한다 (§6.3)
+    promo = client.post(
+        "/api/compliance",
+        json={"text": bad, "mode": "promotion", "quick": True},
+        headers=headers,
+    ).json()
+    check(
+        promo["counts"]["danger"] < info["counts"]["danger"],
+        f"홍보성은 정보성보다 위험 판정이 적다 ({promo['counts']['danger']} < {info['counts']['danger']})",
+    )
+
+    def level_of(result, phrase):
+        return next((i["level"] for i in result["issues"] if i["phrase"] == phrase), None)
+
+    check(level_of(info, "할인") == "danger", "정보성에서 '할인' 은 위험")
+    check(level_of(promo, "할인") == "warn", "홍보성에서 '할인' 은 주의")
+
+    # 깨끗한 글은 아무것도 잡히면 안 된다 (오탐 방지)
+    clean = (
+        "레이저 시술 후 회복 기간은 피부 상태에 따라 다를 수 있습니다. "
+        "붉은기는 보통 2~3일이면 가라앉고 각질은 일주일 정도 지속됩니다. "
+        "개인차가 있으니 조급해하지 않으셔도 됩니다."
+    )
+    ok = compliance.check(clean, "information", use_llm=False)
+    check(ok["counts"]["danger"] == 0, f"정상적인 글은 위험으로 잡지 않는다 (실제 {ok['counts']['danger']}건)")
+    check(ok["blocked"] is False, "정상적인 글은 복사를 막지 않는다")
 
 
 def check_prompt_guards(config: dict) -> None:
