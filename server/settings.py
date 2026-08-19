@@ -51,6 +51,22 @@ TOKEN_TTL_DAYS = _env_int("TOKEN_TTL_DAYS", 30)
 AUTH_MAX_ATTEMPTS = _env_int("AUTH_MAX_ATTEMPTS", 10)
 AUTH_WINDOW_SECONDS = _env_int("AUTH_WINDOW_SECONDS", 300)
 
+# --- Claude API ---------------------------------------------------------
+
+# 키는 환경변수에만 존재한다. 프론트로 절대 내려보내지 않는다 (CLAUDE.md 절대 규칙 1).
+ANTHROPIC_API_KEY = _env("ANTHROPIC_API_KEY")
+
+# 모델은 SPEC §8.4 의 비용 최적화 기준을 따른다.
+#   짧은 출력·높은 빈도(키워드·제목·의료법 검사) -> 빠르고 저렴한 모델
+#   품질이 결과물의 전부인 본문·문단 재생성   -> 상위 모델
+# 환경변수로 덮어쓸 수 있게 열어둔다(모델이 바뀌어도 코드 수정 없이 교체).
+MODEL_FAST = _env("MODEL_FAST", "claude-haiku-4-5")
+MODEL_MAIN = _env("MODEL_MAIN", "claude-sonnet-5")
+
+# 응답 대기 상한(초). 본문 생성은 20~40초 걸린다.
+LLM_TIMEOUT_SECONDS = _env_int("LLM_TIMEOUT_SECONDS", 180)
+
+
 # --- CORS ---------------------------------------------------------------
 
 # 쉼표로 구분. 예) https://younnge.github.io
@@ -73,4 +89,6 @@ def missing_required() -> list[str]:
         missing.append("APP_PASSWORD")
     if not SESSION_SECRET:
         missing.append("SESSION_SECRET")
+    if not ANTHROPIC_API_KEY:
+        missing.append("ANTHROPIC_API_KEY")
     return missing

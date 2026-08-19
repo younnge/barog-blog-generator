@@ -1,7 +1,7 @@
 """바로그 블로그 글 생성기 — 백엔드 진입점.
 
-Phase 1 / 1단계 범위: 인증 · 기준정보 제공 · 상태 확인.
-글 생성(Claude API)은 3단계에서 붙인다.
+Phase 1 범위: 인증 · 기준정보 제공 · 글 생성(키워드/제목/본문) · 상태 확인.
+의료법 검사와 이력 저장은 4·6단계에서 붙인다.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ from starlette.requests import Request
 from . import settings
 from .routes import auth as auth_routes
 from .routes import config as config_routes
+from .routes import generate as generate_routes
 
 logger = logging.getLogger("barog")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -52,6 +53,7 @@ app.add_middleware(
 
 app.include_router(auth_routes.router)
 app.include_router(config_routes.router)
+app.include_router(generate_routes.router)
 
 
 # --- 에러 응답 -----------------------------------------------------------
