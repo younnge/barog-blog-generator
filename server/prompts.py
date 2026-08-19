@@ -304,14 +304,21 @@ def section_prompt(brief: str, title: str, heading: str, body: str,
 
 # --- 응답 스키마 ---------------------------------------------------------
 # 구조화 출력으로 JSON 모양을 강제한다. 파싱 실패를 없애기 위함.
+#
+# 주의: 배열에는 minItems(1 초과)와 maxItems 를 쓸 수 없다. API 가 400 으로 거절한다.
+# 개수는 프롬프트로 요청하고, 넘치면 서버가 잘라낸다 (routes/generate.py 의 _take).
+
+# 단계별 개수 기준. 프롬프트와 서버 자르기가 같은 값을 보게 한 곳에 둔다.
+MAX_KEYWORDS = 12
+MAX_TITLES = 5
+MAX_SECTIONS = 8
+MAX_HASHTAGS = 10
 
 KEYWORDS_SCHEMA = {
     "type": "object",
     "properties": {
         "keywords": {
             "type": "array",
-            "minItems": 10,
-            "maxItems": 12,
             "items": {
                 "type": "object",
                 "properties": {
@@ -333,8 +340,6 @@ TITLES_SCHEMA = {
     "properties": {
         "titles": {
             "type": "array",
-            "minItems": 5,
-            "maxItems": 5,
             "items": {
                 "type": "object",
                 "properties": {
@@ -355,8 +360,6 @@ DRAFT_SCHEMA = {
     "properties": {
         "sections": {
             "type": "array",
-            "minItems": 4,
-            "maxItems": 8,
             "items": {
                 "type": "object",
                 "properties": {
@@ -367,7 +370,7 @@ DRAFT_SCHEMA = {
                 "additionalProperties": False,
             },
         },
-        "hashtags": {"type": "array", "minItems": 5, "maxItems": 10, "items": {"type": "string"}},
+        "hashtags": {"type": "array", "items": {"type": "string"}},
         "meta_description": {"type": "string"},
     },
     "required": ["sections", "hashtags", "meta_description"],

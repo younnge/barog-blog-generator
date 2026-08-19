@@ -9,10 +9,11 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 
 from . import settings
@@ -60,9 +61,34 @@ app.include_router(generate_routes.router)
 # 사용자에게는 상태코드·예외명 같은 기술 용어를 보여주지 않는다.
 # 화면은 항상 message 필드의 한국어 문장만 읽어 쓰면 된다.
 
-@app.exception_handler(HTTPException)
-def handle_http_exception(request: Request, exc: HTTPException) -> JSONResponse:
-    message = exc.detail if isinstance(exc.detail, str) else "잠시 문제가 생겼어요. 다시 눌러볼까요?"
+# 우리가 던진 HTTPException 은 detail 에 한국어 문장이 들어 있다.
+# 반면 FastAPI·Starlette 이 스스로 던지는 것(잘못된 JSON 본문 등)은 영문이므로 그대로 쓰면 안 된다.
+_FRAMEWORK_MESSAGES = {
+    "There was an error parsing the body": "입력한 내용을 다시 확인해 주세요.",
+    "Not Found": "찾을 수 없는 주소예요.",
+    "Method Not Allowed": "잘못된 요청이에요. 새로고침해 주세요.",
+}
+
+
+def _korean_only(detail: object) -> str:
+    """화면에 보여줄 한국어 문장을 고른다. 영문이 섞이면 기본 문장으로 바꾼다."""
+    if not isinstance(detail, str) or not detail.strip():
+        return "잠시 문제가 생겼어요. 다시 눌러볼까요?"
+    if detail in _FRAMEWORK_MESSAGES:
+        return _FRAMEWORK_MESSAGES[detail]
+    # 한글이 하나도 없으면 프레임워크가 만든 영문 메시지로 본다.
+    if not any("가" <= ch <= "힣" for ch in detail):
+        return "잠시 문제가 생겼어요. 다시 눌러볼까요?"
+    return detail
+
+
+# StarletteHTTPException 으로 등록해야 FastAPI 가 스스로 던지는 것까지 함께 잡힌다.
+# (FastAPI 의 HTTPException 은 이것을 상속한다)
+@app.exception_handler(StarletteHTTPException)
+def handle_http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    message = _korean_only(exc.detail)
+    if message == "잠시 문제가 생겼어요. 다시 눌러볼까요?":
+        logger.info("변환한 오류 응답: %s %s -> %s", request.url.path, exc.status_code, exc.detail)
     return JSONResponse(status_code=exc.status_code, content={"message": message})
 
 

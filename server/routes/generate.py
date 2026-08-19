@@ -109,6 +109,15 @@ def _clean_keywords(values: list[str]) -> list[str]:
     return seen[:5]
 
 
+def _take(items: Any, limit: int) -> list:
+    """개수 상한을 지킨다.
+
+    구조화 출력 스키마에 maxItems 를 쓸 수 없어(API 가 400 으로 거절) 여기서 자른다.
+    개수 요청은 프롬프트가 하고, 넘치면 서버가 자른다.
+    """
+    return list(items or [])[:limit]
+
+
 def _llm_error(exc: llm.LLMError) -> HTTPException:
     """LLMError 의 한국어 문장을 그대로 화면에 전달한다."""
     return HTTPException(status_code=502, detail=exc.message)
@@ -130,7 +139,7 @@ def suggest_keywords(req: KeywordsRequest, _: None = Depends(require_token)) -> 
     except llm.LLMError as exc:
         raise _llm_error(exc) from exc
 
-    return {"keywords": data.get("keywords", []), "mode": mode}
+    return {"keywords": _take(data.get("keywords"), prompts.MAX_KEYWORDS), "mode": mode}
 
 
 @router.post("/api/titles")
@@ -154,7 +163,7 @@ def suggest_titles(req: TitlesRequest, _: None = Depends(require_token)) -> dict
     # 글자수는 화면에서 쓰므로 서버가 계산해 함께 준다.
     titles = [
         {**item, "char_count": len(item.get("text", ""))}
-        for item in data.get("titles", [])
+        for item in _take(data.get("titles"), prompts.MAX_TITLES)
     ]
     return {"titles": titles, "mode": mode}
 
@@ -191,13 +200,13 @@ def create_draft(req: DraftRequest, _: None = Depends(require_token)) -> dict[st
     except llm.LLMError as exc:
         raise _llm_error(exc) from exc
 
-    sections = data.get("sections", [])
+    sections = _take(data.get("sections"), prompts.MAX_SECTIONS)
     char_count = sum(len(s.get("body", "")) for s in sections)
 
     return {
         "title": title,
         "sections": sections,
-        "hashtags": data.get("hashtags", []),
+        "hashtags": _take(data.get("hashtags"), prompts.MAX_HASHTAGS),
         "meta_description": data.get("meta_description", ""),
         "char_count": char_count,
         "target_chars": target_chars,
