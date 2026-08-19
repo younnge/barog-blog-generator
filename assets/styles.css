@@ -266,6 +266,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-size: 14px; margin-bottom: 24px;
 }
 .banner-warn { background: #FDF6EC; border: 1px solid #F0DFC4; color: #7A5210; }
+.banner-info { background: var(--brand-50); border: 1px solid var(--brand-200); color: var(--brand-700); }
 .banner-sm { margin: 12px 0 0; padding: 10px 14px; font-size: 13px; }
 
 /* ─────────────── 고급 옵션 ─────────────── */
@@ -422,6 +423,32 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .table tbody tr { border-top: 1px solid var(--border); cursor: pointer; }
 .table tbody tr:hover { background: var(--brand-50); }
 .table .col-title { white-space: normal; min-width: 260px; font-weight: 600; }
+.table tbody tr:focus-visible { outline: 2px solid var(--brand-400); outline-offset: -2px; }
+
+.history-count { padding: 12px 16px 0; font-size: 13px; color: var(--text-sub); }
+
+/* 상태 꼬리표 */
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+}
+.tag-ok   { background: #EDF5EF; color: var(--success); }
+.tag-warn { background: #FDF6EC; color: var(--warn); }
+
+/* 이력 한 건 자세히 보기 */
+.detail {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px 32px; background: #FFFFFF; box-shadow: var(--shadow);
+}
+.detail-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-body { margin-top: 20px; }
+.detail-body .section-heading { margin: 28px 0 10px; }
+.detail-body .section-heading:first-child { margin-top: 0; }
+.detail-body .section-body { white-space: pre-wrap; }
 
 /* ─────────────── 진행 표시 · 알림 ─────────────── */
 

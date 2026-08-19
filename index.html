@@ -6,7 +6,7 @@
 <title>바로그 블로그 글 만들기</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="assets/styles.css?v=6">
+<link rel="stylesheet" href="assets/styles.css?v=7">
 </head>
 <body>
 
@@ -295,8 +295,16 @@
     <div class="page-head">
       <div>
         <h1 class="page-title">이력</h1>
-        <p class="page-sub">팀이 만든 글을 모아서 봅니다.</p>
+        <p class="page-sub">내가 만든 글을 모아서 봅니다.</p>
       </div>
+      <button id="btn-history-clear" class="btn btn-ghost btn-sm" hidden>전체 지우기</button>
+    </div>
+
+    <!-- 저장 방식의 한계를 숨기지 않는다 -->
+    <div class="banner banner-info" id="history-note">
+      이 목록은 <b>이 컴퓨터에서 만든 글</b>만 보여줍니다.
+      다른 컴퓨터나 다른 사람의 글은 보이지 않고, 브라우저 기록을 지우면 함께 사라집니다.
+      오래 보관할 글은 <b>복사해서 따로 저장</b>해 주세요.
     </div>
 
     <div class="search-box search-box-wide">
@@ -312,12 +320,29 @@
     </div>
 
     <div id="history-table-wrap" class="table-wrap" hidden>
+      <p id="history-count" class="history-count"></p>
       <table class="table">
         <thead>
-          <tr><th>날짜</th><th>작성자</th><th>지점</th><th>시술</th><th>제목</th><th>플랫폼</th><th>상태</th></tr>
+          <tr><th>날짜</th><th>글 목적</th><th>지점</th><th>시술</th><th>제목</th><th>분량</th><th>상태</th></tr>
         </thead>
         <tbody id="history-rows"></tbody>
       </table>
+    </div>
+
+    <!-- 한 건 자세히 보기 -->
+    <div id="history-detail" class="detail" hidden>
+      <div class="detail-head">
+        <button id="btn-history-back" class="btn btn-ghost btn-sm">← 목록으로</button>
+        <div class="detail-actions">
+          <button id="btn-history-delete" class="btn btn-ghost btn-sm">이 글 지우기</button>
+          <button id="btn-history-reuse" class="btn btn-secondary btn-sm">이 설정으로 새 글 만들기</button>
+          <button id="btn-history-copy" class="btn btn-primary btn-sm">복사하기</button>
+        </div>
+      </div>
+      <h2 id="detail-title" class="result-title"></h2>
+      <p class="result-meta"><span id="detail-meta"></span></p>
+      <div id="detail-body" class="detail-body"></div>
+      <div id="detail-hashtags" class="hashtags" hidden></div>
     </div>
   </div>
 </section>
@@ -335,6 +360,6 @@
 <!-- 짧은 알림 -->
 <div id="toast" class="toast" hidden></div>
 
-<script src="assets/app.js?v=6"></script>
+<script src="assets/app.js?v=7"></script>
 </body>
 </html>

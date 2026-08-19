@@ -20,7 +20,7 @@ const API_BASE = IS_LOCAL
 
 const KEY_DRAFT_STATE = 'barog.draft';       // 작성 중이던 입력 (새로고침 대비)
 const KEY_LAST_SETTING = 'barog.lastSetting'; // 직전 설정 불러오기
-const KEY_HISTORY = 'barog.history';         // 이력 (6단계에서 서버 저장으로 교체)
+const KEY_HISTORY = 'barog.history';         // 이력 — historyStore 를 통해서만 읽고 쓴다
 const KEY_TOKEN = 'barog.token';             // 로그인 토큰 (30일)
 
 // ─────────────────────────── 글 목적 (모드) ───────────────────────────
@@ -417,10 +417,7 @@ function updateDuplicateBanner() {
   const banner = $('#dup-banner');
   if (!state.branch || !state.procedure) { banner.hidden = true; return; }
 
-  const limit = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const recent = readLocal(KEY_HISTORY, []).filter((row) =>
-    row.branch === state.branch && row.procedure === state.procedure && row.createdAt >= limit
-  );
+  const recent = historyStore.recentSame(state.branch, state.procedure, 30);
 
   if (recent.length === 0) { banner.hidden = true; return; }
   const proc = findProcedure(state.procedure);
@@ -994,41 +991,228 @@ function buildText(format) {
 
 // ─────────────────────────── [5] 이력 ───────────────────────────
 
+// ─────────────────────────── 이력 저장소 ───────────────────────────
+
+/**
+ * 이력은 이 컴퓨터의 브라우저에만 쌓인다 (SPEC §10.2).
+ * 읽기·쓰기를 전부 여기 모아 둔다. 나중에 서버 저장으로 바꾸더라도
+ * 이 안쪽만 고치면 되고 화면 코드는 손대지 않는다.
+ */
+const historyStore = {
+  MAX: 100,   // 브라우저 저장 공간이 한정돼 있어 상한을 둔다
+
+  list() {
+    const rows = readLocal(KEY_HISTORY, []);
+    return Array.isArray(rows) ? rows : [];
+  },
+
+  get(id) {
+    return this.list().find((r) => r.id === id) || null;
+  },
+
+  /** 저장한다. 넘치면 오래된 것부터 지우고 몇 건을 지웠는지 알려준다. */
+  add(record) {
+    const rows = this.list();
+    rows.unshift(record);
+
+    let removed = 0;
+    if (rows.length > this.MAX) {
+      removed = rows.length - this.MAX;
+      rows.length = this.MAX;
+    }
+
+    if (!this.write(rows)) {
+      // 공간이 모자라면 절반으로 줄여 한 번 더 시도한다
+      rows.length = Math.floor(this.MAX / 2);
+      removed = this.list().length + 1 - rows.length;
+      if (!this.write(rows)) return { ok: false, removed: 0 };
+    }
+    return { ok: true, removed };
+  },
+
+  remove(id) {
+    this.write(this.list().filter((r) => r.id !== id));
+  },
+
+  clear() {
+    this.write([]);
+  },
+
+  write(rows) {
+    try {
+      localStorage.setItem(KEY_HISTORY, JSON.stringify(rows));
+      return true;
+    } catch (e) {
+      return false;   // 저장 공간 초과
+    }
+  },
+
+  /** 최근 며칠 안에 같은 지점·시술로 쓴 글 */
+  recentSame(branch, procedure, days) {
+    const since = Date.now() - days * 24 * 60 * 60 * 1000;
+    return this.list().filter(
+      (r) => r.branch === branch && r.procedure === procedure && r.createdAt >= since
+    );
+  },
+};
+
+/** 이력에 남길 한 건. 나중에 다시 꺼내 쓸 수 있게 본문까지 통째로 담는다. */
+function buildHistoryRecord() {
+  const ctx = currentContext();
+  const hasDanger = state.issues.some((i) => !i.resolved && i.level === 'danger');
+  const modeName = (MODES.find((m) => m.id === state.mode) || {}).name || '';
+
+  return {
+    id: String(Date.now()) + Math.random().toString(36).slice(2, 7),
+    createdAt: Date.now(),
+    mode: state.mode,
+    modeName,
+    lang: 'ko',
+    branch: state.branch, branchName: ctx.branchName,
+    category: state.category,
+    procedure: state.procedure, procedureName: ctx.procedureName,
+    persona: state.persona, personaName: ctx.personaName,
+    audience: state.audience,
+    tone: state.tone,
+    platform: state.platform, platformName: ctx.platformName,
+    length: state.length,
+    cta: state.cta,
+    reference: state.reference,
+    keywords: state.keywords.slice(),
+    title: state.title,
+    sections: state.draft ? state.draft.sections.map((x) => ({ ...x })) : [],
+    hashtags: state.draft ? state.draft.hashtags.slice() : [],
+    metaDescription: state.draft ? state.draft.meta_description : '',
+    charCount: state.draft ? state.draft.char_count : 0,
+    status: hasDanger ? '수정 필요' : '완료',
+  };
+}
+
 function renderHistory() {
-  const rows = readLocal(KEY_HISTORY, []);
+  const rows = historyStore.list();
   const query = $('#history-search').value.trim().toLowerCase();
   const filtered = query
-    ? rows.filter((r) => [r.branchName, r.procedureName, r.title].join(' ').toLowerCase().includes(query))
+    ? rows.filter((r) => [r.branchName, r.procedureName, r.title, (r.keywords || []).join(' ')]
+        .join(' ').toLowerCase().includes(query))
     : rows;
+
+  // 목록을 다시 그릴 때는 상세 보기를 닫는다
+  $('#history-detail').hidden = true;
+  $('#btn-history-clear').hidden = rows.length === 0;
+  $('#history-note').hidden = false;
 
   $('#history-empty').hidden = filtered.length > 0;
   $('#history-table-wrap').hidden = filtered.length === 0;
 
   if (filtered.length === 0) {
+    const empty = $('#history-empty');
+    empty.hidden = false;
     if (query) {
-      $('#history-empty').hidden = false;
-      $('#history-empty').querySelector('.empty-title').textContent = '찾는 글이 없어요';
-      $('#history-empty').querySelector('.empty-sub').textContent = '다른 말로 검색해 보세요.';
+      empty.querySelector('.empty-title').textContent = '찾는 글이 없어요';
+      empty.querySelector('.empty-sub').textContent = '다른 말로 검색해 보세요.';
     } else {
-      $('#history-empty').querySelector('.empty-title').textContent = '아직 만든 글이 없어요';
-      $('#history-empty').querySelector('.empty-sub').textContent = '첫 글을 만들면 여기에 쌓입니다.';
+      empty.querySelector('.empty-title').textContent = '아직 만든 글이 없어요';
+      empty.querySelector('.empty-sub').textContent = '첫 글을 만들면 여기에 쌓입니다.';
     }
     return;
   }
 
-  $('#history-rows').innerHTML = filtered.map((r) => {
-    const date = new Date(r.createdAt);
-    const stamp = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-    return `<tr>
-      <td>${stamp}</td>
-      <td>${escapeHtml(r.author || '-')}</td>
-      <td>${escapeHtml(r.branchName)}</td>
-      <td>${escapeHtml(r.procedureName)}</td>
-      <td class="col-title">${escapeHtml(r.title)}</td>
-      <td>${escapeHtml(r.platformName)}</td>
-      <td>${escapeHtml(r.status)}</td>
-    </tr>`;
-  }).join('');
+  $('#history-count').textContent = query
+    ? `${filtered.length}건 찾았어요 (전체 ${rows.length}건)`
+    : `${rows.length}건 · 최대 ${historyStore.MAX}건까지 보관해요`;
+
+  const tbody = $('#history-rows');
+  tbody.innerHTML = '';
+
+  filtered.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.className = 'row-clickable';
+    tr.tabIndex = 0;
+    tr.setAttribute('role', 'button');
+    tr.setAttribute('aria-label', `${r.title} 자세히 보기`);
+
+    const d = new Date(r.createdAt);
+    const stamp = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    const statusClass = r.status === '완료' ? 'tag-ok' : 'tag-warn';
+
+    tr.innerHTML =
+      `<td>${stamp}</td>` +
+      `<td>${escapeHtml(r.modeName || '-')}</td>` +
+      `<td>${escapeHtml(r.branchName)}</td>` +
+      `<td>${escapeHtml(r.procedureName)}</td>` +
+      `<td class="col-title">${escapeHtml(r.title)}</td>` +
+      `<td>${(r.charCount || 0).toLocaleString()}자</td>` +
+      `<td><span class="tag ${statusClass}">${escapeHtml(r.status)}</span></td>`;
+
+    const open = () => showHistoryDetail(r.id);
+    tr.addEventListener('click', open);
+    tr.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+/** 지금 상세 보기로 열어 둔 이력의 id */
+let openHistoryId = null;
+
+function showHistoryDetail(id) {
+  const r = historyStore.get(id);
+  if (!r) { toast('그 글을 찾지 못했어요'); renderHistory(); return; }
+
+  openHistoryId = id;
+
+  $('#history-table-wrap').hidden = true;
+  $('#history-empty').hidden = true;
+  $('#history-note').hidden = true;
+  $('#history-detail').hidden = false;
+
+  $('#detail-title').textContent = r.title;
+
+  const d = new Date(r.createdAt);
+  const stamp = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  $('#detail-meta').textContent = [
+    stamp, r.modeName, r.branchName, r.procedureName, r.personaName, r.platformName,
+    (r.charCount || 0).toLocaleString() + '자',
+  ].filter(Boolean).join(' · ');
+
+  const box = $('#detail-body');
+  box.innerHTML = '';
+  (r.sections || []).forEach((sec) => {
+    if (sec.heading) {
+      const h = document.createElement('h3');
+      h.className = 'section-heading';
+      h.textContent = sec.heading;
+      box.appendChild(h);
+    }
+    const p = document.createElement('div');
+    p.className = 'section-body';
+    p.textContent = sec.body;
+    box.appendChild(p);
+  });
+
+  const tags = $('#detail-hashtags');
+  const tagText = formatHashtags(r.hashtags);
+  tags.textContent = tagText;
+  tags.hidden = !tagText;
+
+  window.scrollTo({ top: 0 });
+}
+
+/** 이력에 저장된 글을 지금 선택한 형식의 텍스트로 만든다. */
+function historyText(r) {
+  const backup = { title: state.title, draft: state.draft };
+  state.title = r.title;
+  state.draft = {
+    sections: r.sections || [],
+    hashtags: r.hashtags || [],
+    meta_description: r.metaDescription || '',
+  };
+  const text = buildText(r.platform || 'naver');
+  state.title = backup.title;
+  state.draft = backup.draft;
+  return text;
 }
 
 // ─────────────────────────── 잡다 ───────────────────────────
@@ -1261,21 +1445,70 @@ function bindEvents() {
 
   // 6단계에서 서버 저장으로 바꾼다
   $('#btn-save').addEventListener('click', () => {
-    const ctx = currentContext();
-    const rows = readLocal(KEY_HISTORY, []);
-    const hasDanger = state.issues.some((i) => !i.resolved && i.level === 'danger');
-    rows.unshift({
-      id: String(Date.now()),
-      createdAt: Date.now(),
-      author: '',
-      branch: state.branch, branchName: ctx.branchName,
-      procedure: state.procedure, procedureName: ctx.procedureName,
-      platformName: ctx.platformName,
-      title: state.title,
-      status: hasDanger ? '수정 필요' : '완료',
+    if (!state.draft) { toast('저장할 글이 없어요'); return; }
+
+    const result = historyStore.add(buildHistoryRecord());
+    if (!result.ok) {
+      toast('저장 공간이 부족해요. 이력에서 오래된 글을 지워주세요');
+      return;
+    }
+    // 무엇이 사라졌는지 조용히 넘어가지 않는다
+    toast(result.removed > 0
+      ? `저장했어요. 오래된 글 ${result.removed}건은 자동으로 정리했어요`
+      : '이력에 저장했어요');
+  });
+
+  // ── 이력 화면 ──
+
+  $('#btn-history-back').addEventListener('click', () => {
+    openHistoryId = null;
+    renderHistory();
+  });
+
+  $('#btn-history-copy').addEventListener('click', () => {
+    const r = historyStore.get(openHistoryId);
+    if (!r) return;
+    copyToClipboard(historyText(r), `${r.platformName || '블로그'}에 붙여넣기 하세요`);
+  });
+
+  $('#btn-history-delete').addEventListener('click', () => {
+    const r = historyStore.get(openHistoryId);
+    if (!r) return;
+    if (!confirm(`'${r.title}' 을(를) 지울까요?
+지우면 되돌릴 수 없어요.`)) return;
+    historyStore.remove(openHistoryId);
+    openHistoryId = null;
+    renderHistory();
+    toast('지웠어요');
+  });
+
+  $('#btn-history-reuse').addEventListener('click', () => {
+    const r = historyStore.get(openHistoryId);
+    if (!r) return;
+    // 설정만 가져오고 결과물은 가져오지 않는다. 새로 만드는 것이 목적이다.
+    Object.assign(state, {
+      mode: r.mode || 'information',
+      branch: r.branch, category: r.category, procedure: r.procedure,
+      persona: r.persona, audience: r.audience, tone: r.tone,
+      platform: r.platform, length: r.length,
+      cta: r.cta || '', reference: r.reference || '',
+      keywords: [], keywordPool: [], titlePool: [], title: '', draft: null, issues: [],
     });
-    saveLocal(KEY_HISTORY, rows);
-    toast('이력에 저장했어요');
+    saveDraftState();
+    renderInputScreen();
+    goTo('input');
+    toast('설정을 가져왔어요. 키워드부터 다시 골라주세요');
+  });
+
+  $('#btn-history-clear').addEventListener('click', () => {
+    const n = historyStore.list().length;
+    if (!n) return;
+    if (!confirm(`이력 ${n}건을 모두 지울까요?
+지우면 되돌릴 수 없어요.`)) return;
+    historyStore.clear();
+    openHistoryId = null;
+    renderHistory();
+    toast('이력을 모두 지웠어요');
   });
 
   $('#btn-new').addEventListener('click', () => {
