@@ -51,6 +51,13 @@ TOKEN_TTL_DAYS = _env_int("TOKEN_TTL_DAYS", 30)
 AUTH_MAX_ATTEMPTS = _env_int("AUTH_MAX_ATTEMPTS", 10)
 AUTH_WINDOW_SECONDS = _env_int("AUTH_WINDOW_SECONDS", 300)
 
+# 글 생성·검사 호출량 제한 (한 IP 기준).
+# 비밀번호가 새어 나가도 Claude 호출이 무한정 나가지 않게 막는 비용 방어선이다.
+# 한 편을 쓰는 동안(키워드·제목·본문·재생성·검사) 실제로는 분당 이 값을 넘기 어렵다.
+# 한 지점 사무실에서 여러 명이 같은 공인 IP를 쓸 수 있어 넉넉히 잡는다.
+GEN_MAX_PER_WINDOW = _env_int("GEN_MAX_PER_WINDOW", 60)
+GEN_WINDOW_SECONDS = _env_int("GEN_WINDOW_SECONDS", 60)
+
 # --- Claude API ---------------------------------------------------------
 
 # 키는 환경변수에만 존재한다. 프론트로 절대 내려보내지 않는다 (CLAUDE.md 절대 규칙 1).

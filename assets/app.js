@@ -135,19 +135,33 @@ async function api(path, body) {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  // 무한정 매달리지 않게 안전 상한을 둔다. 본문 생성(최대 40초)에 콜드스타트(최대 50초)가
+  // 겹쳐도 넉넉하도록 크게 잡되, 이보다 오래 걸리면 화면이 멈춰 보이지 않게 끊는다.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 210000);
+
   let res;
   try {
     res = await fetch(`${API_BASE}${path}`, {
       method: body === undefined ? 'GET' : 'POST',
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
     });
   } catch (e) {
-    // 네트워크가 끊겼거나 서버가 자고 있는 경우
+    // 시간이 너무 오래 걸려 스스로 끊은 경우와, 네트워크가 끊겼거나 서버가 자고 있는 경우를 나눈다.
+    if (e && e.name === 'AbortError') {
+      throw new Error('시간이 너무 오래 걸려서 멈췄어요. 잠시 뒤에 다시 눌러볼까요?');
+    }
     throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 눌러볼까요?');
+  } finally {
+    clearTimeout(timer);
   }
 
-  if (res.status === 401) {
+  // 로그인 요청(/api/auth)의 401 은 '비밀번호가 틀림'이지 '세션 만료'가 아니다.
+  // 이 경우는 아래에서 서버가 준 문구(비밀번호가 맞지 않아요…)를 그대로 보여준다.
+  // 그 밖의 엔드포인트에서 401 이 나면 토큰이 무효가 된 것이므로 다시 로그인시킨다.
+  if (res.status === 401 && path !== '/api/auth') {
     saveLocal(KEY_TOKEN, '');
     throw new NeedsLogin('로그인이 만료됐어요. 비밀번호를 다시 입력해 주세요.');
   }

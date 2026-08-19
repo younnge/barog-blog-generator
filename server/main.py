@@ -103,12 +103,27 @@ def handle_validation_error(request: Request, exc: RequestValidationError) -> JS
     )
 
 
+def _cors_headers(request: Request) -> dict[str, str]:
+    """이 요청에 붙일 CORS 헤더를 만든다.
+
+    처리 못 한 오류(500)는 CORS 미들웨어 바깥에서 응답이 만들어져 헤더가 붙지 않는다.
+    그러면 브라우저가 응답을 가로막아 화면에는 '연결 실패'로 잘못 보인다.
+    실제 원인(서버 오류)이 화면·로그에 제대로 드러나도록 여기서 직접 붙인다.
+    """
+    origin = request.headers.get("origin")
+    allowed = settings.ALLOWED_ORIGINS + settings.LOCAL_ORIGINS
+    if origin and origin in allowed:
+        return {"Access-Control-Allow-Origin": origin, "Vary": "Origin"}
+    return {}
+
+
 @app.exception_handler(Exception)
 def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
     logger.exception("처리하지 못한 오류: %s", request.url.path)
     return JSONResponse(
         status_code=500,
         content={"message": "잠시 문제가 생겼어요. 다시 눌러볼까요?"},
+        headers=_cors_headers(request),
     )
 
 

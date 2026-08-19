@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from .. import compliance, prompts
-from .auth import require_token
+from .auth import guard_generation
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ class CheckRequest(BaseModel):
 
 
 @router.post("/api/compliance")
-def check_text(req: CheckRequest, _: None = Depends(require_token)) -> dict[str, Any]:
+def check_text(req: CheckRequest, _: None = Depends(guard_generation)) -> dict[str, Any]:
     text = req.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="검사할 글이 없어요. 본문을 먼저 만들어 주세요.")

@@ -62,3 +62,19 @@ def require_token(
     token = credentials.credentials if credentials else ""
     if not security.verify_token(token):
         raise HTTPException(status_code=401, detail="다시 로그인해 주세요.")
+
+
+def guard_generation(
+    request: Request,
+    _: None = Depends(require_token),
+) -> None:
+    """생성·검사 계열 엔드포인트 보호 — 토큰 확인 + IP별 호출량 제한.
+
+    토큰이 유효해도 한 IP가 짧은 시간에 지나치게 많이 부르면 막는다.
+    비밀번호가 유출돼도 Claude 호출 비용이 폭주하지 않게 하는 방어선이다.
+    """
+    if security.too_many_generations(_client_key(request)):
+        raise HTTPException(
+            status_code=429,
+            detail="잠깐 사이에 요청이 너무 많았어요. 30초쯤 뒤에 다시 눌러주세요.",
+        )

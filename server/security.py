@@ -92,24 +92,49 @@ def verify_token(token: str) -> bool:
 
 # --- 시도 제한 ----------------------------------------------------------
 
-# {클라이언트 키: 최근 시도 시각들}. 무료 플랜은 단일 인스턴스라 메모리 보관으로 충분하다.
+# {클라이언트 키: 최근 시각들}. 무료 플랜은 단일 인스턴스라 메모리 보관으로 충분하다.
+# (인스턴스를 2개 이상으로 늘리면 인스턴스마다 따로 세므로 공유 저장소로 바꿔야 한다)
 _attempts: dict[str, deque[float]] = defaultdict(deque)
+_generations: dict[str, deque[float]] = defaultdict(deque)
 
 
-def too_many_attempts(client_key: str) -> bool:
-    """짧은 시간에 비밀번호를 반복 시도했는지 확인하고, 시도 횟수를 기록한다."""
+def _rate_limited(bucket: dict[str, deque[float]], client_key: str,
+                  max_count: int, window_seconds: int) -> bool:
+    """슬라이딩 윈도로 호출 횟수를 세고, 한도를 넘었는지 알려준다.
+
+    한도 이내면 이번 호출을 기록하고 False, 넘었으면 기록하지 않고 True.
+    """
     now = time.time()
-    window_start = now - settings.AUTH_WINDOW_SECONDS
-    history = _attempts[client_key]
+    window_start = now - window_seconds
+    history = bucket[client_key]
 
     while history and history[0] < window_start:
         history.popleft()
 
-    if len(history) >= settings.AUTH_MAX_ATTEMPTS:
+    if len(history) >= max_count:
         return True
 
     history.append(now)
     return False
+
+
+def too_many_attempts(client_key: str) -> bool:
+    """짧은 시간에 비밀번호를 반복 시도했는지 확인하고, 시도 횟수를 기록한다."""
+    return _rate_limited(
+        _attempts, client_key,
+        settings.AUTH_MAX_ATTEMPTS, settings.AUTH_WINDOW_SECONDS,
+    )
+
+
+def too_many_generations(client_key: str) -> bool:
+    """짧은 시간에 생성·검사를 지나치게 많이 호출했는지 확인하고 기록한다.
+
+    비밀번호가 유출돼도 Claude 호출이 무한정 나가지 않게 막는 비용 방어선이다.
+    """
+    return _rate_limited(
+        _generations, client_key,
+        settings.GEN_MAX_PER_WINDOW, settings.GEN_WINDOW_SECONDS,
+    )
 
 
 def clear_attempts(client_key: str) -> None:

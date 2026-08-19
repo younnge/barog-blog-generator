@@ -77,6 +77,59 @@ def run(client, password: str) -> None:
     )
 
     check_generation_guards(client, token, data)
+    check_rate_limit(client, token)
+    check_cors_on_error()
+
+
+class _FakeReq:
+    """CORS 헤더 계산만 확인하기 위한 최소 요청 흉내."""
+
+    def __init__(self, origin: str) -> None:
+        self.headers = {"origin": origin} if origin else {}
+
+
+def check_cors_on_error() -> None:
+    """H2 — 처리 못 한 오류(500) 응답에도 CORS 헤더가 붙는지 본다.
+
+    이게 빠지면 브라우저가 오류 응답을 가로막아, 실제로는 서버 오류인데
+    화면에는 '연결 실패'로 잘못 보인다.
+    """
+    from . import main
+
+    allowed = main._cors_headers(_FakeReq("http://localhost:8000"))
+    check(
+        allowed.get("Access-Control-Allow-Origin") == "http://localhost:8000",
+        "허용된 곳에서 온 오류 응답에는 CORS 헤더가 붙는다",
+    )
+
+    denied = main._cors_headers(_FakeReq("https://evil.example"))
+    check(
+        "Access-Control-Allow-Origin" not in denied,
+        "허용하지 않은 곳에는 CORS 헤더를 주지 않는다",
+    )
+
+
+def check_rate_limit(client, token: str) -> None:
+    """H1 — 생성 호출이 한도를 넘으면 429로 막는지 본다 (비용 방어)."""
+    from . import security, settings
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    security._generations.clear()
+    original = settings.GEN_MAX_PER_WINDOW
+    settings.GEN_MAX_PER_WINDOW = 3
+    try:
+        codes = [
+            client.post("/api/keywords", json={"procedure": "antiaging-032"}, headers=headers).status_code
+            for _ in range(6)
+        ]
+    finally:
+        settings.GEN_MAX_PER_WINDOW = original
+        security._generations.clear()
+
+    # 한도 안(앞 3번)은 통과해 생성 단계로 넘어가고(키가 없으면 502), 넘으면 429로 막힌다.
+    check(codes[0] != 429, "한도 안에서는 생성 호출이 통과한다")
+    check(429 in codes, f"한도를 넘으면 429로 막는다 (실제 코드들: {codes})")
 
 
 def check_generation_guards(client, token: str, config: dict) -> None:

@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from .. import config_store, llm, prompts, settings
-from .auth import require_token
+from .auth import guard_generation
 
 router = APIRouter()
 
@@ -126,7 +126,7 @@ def _llm_error(exc: llm.LLMError) -> HTTPException:
 # --- 엔드포인트 ----------------------------------------------------------
 
 @router.post("/api/keywords")
-def suggest_keywords(req: KeywordsRequest, _: None = Depends(require_token)) -> dict[str, Any]:
+def suggest_keywords(req: KeywordsRequest, _: None = Depends(guard_generation)) -> dict[str, Any]:
     mode, ctx, brief = _prepare(req)
     try:
         data = llm.generate_json(
@@ -143,7 +143,7 @@ def suggest_keywords(req: KeywordsRequest, _: None = Depends(require_token)) -> 
 
 
 @router.post("/api/titles")
-def suggest_titles(req: TitlesRequest, _: None = Depends(require_token)) -> dict[str, Any]:
+def suggest_titles(req: TitlesRequest, _: None = Depends(guard_generation)) -> dict[str, Any]:
     keywords = _clean_keywords(req.selected_keywords)
     if not keywords:
         raise HTTPException(status_code=400, detail="키워드를 먼저 골라주세요.")
@@ -169,7 +169,7 @@ def suggest_titles(req: TitlesRequest, _: None = Depends(require_token)) -> dict
 
 
 @router.post("/api/draft")
-def create_draft(req: DraftRequest, _: None = Depends(require_token)) -> dict[str, Any]:
+def create_draft(req: DraftRequest, _: None = Depends(guard_generation)) -> dict[str, Any]:
     title = req.title.strip()
     if not title:
         raise HTTPException(status_code=400, detail="제목을 먼저 골라주세요.")
@@ -216,7 +216,7 @@ def create_draft(req: DraftRequest, _: None = Depends(require_token)) -> dict[st
 
 
 @router.post("/api/draft/section")
-def regenerate_section(req: SectionRequest, _: None = Depends(require_token)) -> dict[str, Any]:
+def regenerate_section(req: SectionRequest, _: None = Depends(guard_generation)) -> dict[str, Any]:
     if not req.body.strip():
         raise HTTPException(status_code=400, detail="다시 쓸 내용을 찾지 못했어요. 새로고침해 주세요.")
 

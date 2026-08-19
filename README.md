@@ -8,31 +8,35 @@
 
 ## 지금 상태
 
-**Phase 1 / 2단계 완료** — 백엔드(1단계) + 화면 전체(2단계).
-글 생성(3단계)은 아직 없다. 화면의 키워드·제목·본문·검사 결과는 **예시 데이터**다.
+**Phase 1 / 1~7단계 완료.** 링크 접속 → 비밀번호 → 키워드 → 제목 → 본문 → 의료법 검사 →
+문구 교체 → 플랫폼별 복사 → 이력까지 처음부터 끝까지 동작한다.
+남은 것은 8단계(마케터 시범 사용)로 사람이 하는 일이다. 자세한 진행은 [HANDOFF.md](HANDOFF.md).
 
 - 화면: https://younnge.github.io/barog-blog-generator/
 - 서버: https://barog-blog-generator-api.onrender.com
 
-### 2단계에서 아직 진짜가 아닌 것
-화면은 서버를 부르지 않는다. 3단계에서 아래 세 곳만 바꾸면 연결된다.
+### API 목록
 
-| 위치 | 지금 | 3단계에서 |
-|---|---|---|
-| `assets/app.js` `loadConfig()` | `config/*.json` 직접 읽기 | `GET /api/config` |
-| `assets/app.js` 잠금 화면 `submit` | 아무 비밀번호나 통과 | `POST /api/auth` + 토큰 저장 |
-| `assets/app.js` `SAMPLE` | 예시 키워드·제목·본문·검사 결과 | `/api/keywords` `/api/titles` `/api/draft` `/api/compliance` |
+모든 생성·검사 요청은 헤더 `Authorization: Bearer <토큰>` 이 필요하고, IP별 호출량 제한이 걸린다.
 
 | 주소 | 하는 일 | 로그인 필요 |
 |---|---|---|
 | `GET /api/health` | 서버가 살아 있는지 확인 (무료 플랜 깨우기용) | 아니오 |
 | `POST /api/auth` | 공통 비밀번호 확인 → 30일 토큰 발급 | 아니오 |
 | `GET /api/config` | 지점·시술·페르소나·독자타겟·톤·플랫폼·분량 전체 | 예 |
+| `POST /api/keywords` | 검색 키워드 12개 추천 (Haiku) | 예 |
+| `POST /api/titles` | 제목 5개 추천 (Haiku) | 예 |
+| `POST /api/draft` | 본문 생성 (Sonnet) | 예 |
+| `POST /api/draft/section` | 문단 하나만 다시 쓰기 (Sonnet) | 예 |
+| `POST /api/compliance` | 의료법 표현 검사 (규칙 + Haiku) | 예 |
+
+화면은 기준정보·키워드·제목·본문·검사를 모두 위 서버에서 받는다. `config/*.json` 을 브라우저가
+직접 읽지 않는다(그래서 GitHub Pages 에서 정적으로 내보내지 않는다 — `_config.yml`).
 
 ## 배포 구조
 
 ```
-GitHub Pages (화면, 2단계에서 추가)  ──HTTPS──▶  Render (서버, 지금 이 코드)
+GitHub Pages (화면)  ──HTTPS──▶  Render (서버)  ──▶  Claude API
 ```
 
 - Anthropic API 키와 공통 비밀번호는 **Render 환경변수에만** 존재한다. 저장소에 넣지 않는다.
@@ -97,10 +101,20 @@ Render 대시보드 → Environment → `APP_PASSWORD` 수정 → 저장(자동 
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r server/requirements.txt
 copy server\.env.example server\.env
-.\.venv\Scripts\python.exe -m uvicorn server.main:app --reload --port 8000
+.\.venv\Scripts\python.exe -m uvicorn server.main:app --reload --port 8001
 ```
 
+서버는 **8001 포트**로 띄운다. 화면(`assets/app.js`)이 로컬에서는 `127.0.0.1:8001` 을 부르기 때문이다.
+화면은 다른 창에서 정적 서버로 띄운다:
+
+```
+py -3 -m http.server 8000
+```
+
+브라우저에서 `http://localhost:8000` 을 연다.
+
 `server/.env`의 비밀번호는 로컬 테스트용이며 저장소에 올라가지 않는다.
+실제 글 생성까지 확인하려면 `server/.env` 의 `ANTHROPIC_API_KEY` 에 진짜 키를 넣어야 한다.
 
 ### 점검 스크립트
 
@@ -109,35 +123,43 @@ copy server\.env.example server\.env
 .\.venv\Scripts\python.exe -m server.smoke_test
 ```
 
-로그인·차단·기준정보 개수를 한 번에 확인한다. 배포된 서버를 확인하려면 주소를 뒤에 붙인다:
+로그인·차단·기준정보 개수·의료법 검사·모드 강제까지 한 번에 확인한다(총 43항목).
+배포된 서버를 확인하려면 주소를 뒤에 붙인다:
 
 ```
 .\.venv\Scripts\python.exe -m server.smoke_test https://<서비스주소>.onrender.com
 ```
 
-## 화면 로컬에서 보기
+이 점검은 `main`에 푸시할 때 GitHub Actions(`.github/workflows/smoke-test.yml`)에서도 자동으로 돈다.
 
-빌드 도구가 없어 파일만 열면 되지만, `fetch`로 JSON을 읽으므로 간단한 서버가 필요하다.
+## 화면 배포 전에 (중요)
+
+화면 파일을 고쳤으면 **푸시 전에 버전을 올린다.** 안 그러면 마케터 브라우저가 예전 화면을 계속 쓴다.
 
 ```
-py -3 -m http.server 5500
+py -3 tools/bump.py
 ```
 
-브라우저에서 `http://localhost:5500` 을 연다.
+`index.html`의 `assets/app.js?v=N` 숫자가 올라간다. 그다음 커밋·푸시한다.
 
 ## 파일 구조
 
 ```
-index.html         화면 전체 (6개 화면)
+index.html         화면 (잠금 + 4단계 위저드 + 이력)
 assets/styles.css  디자인 토큰 · 컴포넌트
-assets/app.js      화면 로직 · 상태 · 렌더링
-config/            기준정보 JSON (화면 버튼의 원본)
+assets/app.js      화면 로직 · 상태 · 렌더링 · 플랫폼별 포맷
+config/            기준정보 JSON (지점·시술·페르소나·독자·톤·금지어 사전)
 server/
-  main.py          앱 진입점, CORS, 에러 문구
+  main.py          앱 진입점, CORS, 에러 문구(한국어 강제)
   settings.py      환경변수
-  security.py      비밀번호 비교, 토큰 발급·검증, 시도 제한
+  security.py      비밀번호 비교, 토큰 발급·검증, 호출량 제한
   config_store.py  config/*.json 읽기
-  routes/          /api/auth, /api/config
-  smoke_test.py    점검 스크립트
+  prompts.py       모드별 프롬프트 조립 + 응답 스키마
+  llm.py           Claude 호출 (실패를 한국어 문장으로 변환)
+  compliance.py    의료법 검사 (규칙 + 문맥 판정)
+  routes/          auth · config · generate · check
+  smoke_test.py    점검 스크립트 (43항목)
+tools/bump.py      배포 전 화면 파일 버전 올리기
+_config.yml        GitHub Pages 에 화면만 내보내는 설정
 render.yaml        Render 배포 설정
 ```
