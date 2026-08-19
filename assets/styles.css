@@ -31,6 +31,11 @@
 
 * { box-sizing: border-box; }
 
+/* hidden 속성이 언제나 이긴다.
+   .screen/.loading 처럼 display 를 지정한 클래스가 브라우저 기본 규칙을 덮어써서
+   숨긴 화면과 로딩 오버레이가 계속 보이는 문제를 막는다. */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
